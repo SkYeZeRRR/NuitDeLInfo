@@ -1,11 +1,138 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <meta charset="UTF-8" />
+    <title>Salle 2 — Choisis ton OS idéal</title>
+    <link rel="stylesheet" href="salle2.css">
 </head>
 <body>
-    <p>hello</p>
+<div class="game-wrapper">
+    <div class="header">
+        <h1>Salle 2 — Passer de Windows à Linux</h1>
+        <h2>Mini-jeu : “Choisis ton OS idéal” 🧪</h2>
+        <p>Glisse les bonnes caractéristiques sur la carte Linux.</p>
+    </div>
+
+    <div class="layout">
+        <!-- OS Cards -->
+        <div class="os-cards">
+            <div class="os-card">
+                <div class="os-tag">Windows</div>
+                <h3>Windows</h3>
+                <ul>
+                    <li>Licence payante</li>
+                    <li>Très utilisé en entreprise</li>
+                    <li>Beaucoup de logiciels propriétaires</li>
+                </ul>
+            </div>
+
+            <div class="os-card">
+                <div class="os-tag">macOS</div>
+                <h3>macOS</h3>
+                <ul>
+                    <li>Uniquement sur Mac</li>
+                    <li>Écosystème fermé</li>
+                    <li>Matériel cher</li>
+                </ul>
+            </div>
+
+            <div class="os-card linux">
+                <span class="linux-badge">Cible du jeu 🎯</span>
+                <div class="os-tag">Linux</div>
+                <h3>Linux</h3>
+                <ul>
+                    <li>Idéal pour la sobriété numérique</li>
+                </ul>
+                <div id="linux-drop" class="drop-zone empty"></div>
+            </div>
+        </div>
+
+        <!-- Tokens -->
+        <aside class="side-panel">
+            <h4>Caractéristiques 🧩</h4>
+            <div id="token-pool" class="token-pool">
+                <div class="token" draggable="true" data-correct="true">Gratuit ou très faible coût</div>
+                <div class="token" draggable="true" data-correct="true">Logiciel libre & ouvert</div>
+                <div class="token" draggable="true" data-correct="true">Respect de la vie privée</div>
+                <div class="token" draggable="true" data-correct="true">Très personnalisable</div>
+                <div class="token" draggable="true" data-correct="true">Fonctionne sur vieux PC</div>
+
+                <div class="token" draggable="true" data-correct="false">Licence obligatoire payante</div>
+                <div class="token" draggable="true" data-correct="false">Dépend d’un constructeur unique</div>
+                <div class="token" draggable="true" data-correct="false">Collecte massive de données</div>
+                <div class="token" draggable="true" data-correct="false">Nécessite d’acheter un Mac</div>
+                <div class="token" draggable="true" data-correct="false">Mises à jour forcées</div>
+            </div>
+        </aside>
+    </div>
+
+    <div class="controls">
+        <button id="check-btn" class="btn-primary">✔ Vérifier</button>
+        <button id="reset-btn" class="btn-secondary">🔁 Reset</button>
+        <div id="feedback" class="feedback">Glisse les caractéristiques puis vérifie.</div>
+    </div>
+</div>
+
+<script>
+    const tokens = document.querySelectorAll('.token');
+    let draggedToken = null;
+
+    const dropZone = document.getElementById('linux-drop');
+    const tokenPool = document.getElementById('token-pool');
+
+    const checkBtn = document.getElementById('check-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const feedback = document.getElementById('feedback');
+
+    tokens.forEach(token => {
+        token.addEventListener('dragstart', () => draggedToken = token);
+        token.addEventListener('dragend', () => draggedToken = null);
+    });
+
+    function makeDroppable(area) {
+        area.addEventListener('dragover', e => e.preventDefault());
+        area.addEventListener('drop', () => {
+            if (draggedToken) area.appendChild(draggedToken);
+            updateZoneState();
+        });
+    }
+
+    makeDroppable(dropZone);
+    makeDroppable(tokenPool);
+
+    function updateZoneState() {
+        dropZone.classList.toggle('empty', dropZone.children.length === 0);
+    }
+
+    checkBtn.addEventListener('click', () => {
+        const placed = dropZone.querySelectorAll('.token');
+
+        let correct = 0;
+        let wrong = 0;
+
+        placed.forEach(t => {
+            if (t.dataset.correct === "true") correct++;
+            else wrong++;
+        });
+
+        if (wrong === 0 && correct === 5) {
+            feedback.textContent = "Bravo petit pingouin 🐧💚 Linux t'adore !";
+            feedback.className = "feedback success";
+        } else {
+            feedback.textContent = `Encore un effort : ${correct}/5 corrects, ${wrong} erreurs.`;
+            feedback.className = "feedback error";
+        }
+    });
+
+    resetBtn.addEventListener('click', () => {
+        document.querySelectorAll('#linux-drop .token').forEach(t => tokenPool.appendChild(t));
+        updateZoneState();
+        feedback.textContent = "Glisse les caractéristiques puis vérifie.";
+        feedback.className = "feedback";
+    });
+
+    updateZoneState();
+</script>
+
 </body>
 </html>
