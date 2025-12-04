@@ -1,52 +1,47 @@
+/* Fond ciel étoilé statique */
 body {
     margin: 0;
     height: 100vh;
-    overflow: hidden;
-    background: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: black url("https://www.transparenttextures.com/patterns/stardust.png");
+    background-size: cover;
+    font-family: Arial, sans-serif;
+    color: white;
 }
 
-/* Animation des étoiles */
-body::before {
-    content: "";
-    position: absolute;
-    top: -200%;
-    left: 0;
-    width: 200%;
-    height: 200%;
-    background: url('https://www.transparenttextures.com/patterns/stardust.png');
-    animation: starMove 40s linear infinite;
-    opacity: 0.7;
-    pointer-events: none;
-}
-
-@keyframes starMove {
-    from {
-        transform: translateY(0);
-    }
-    to {
-        transform: translateY(100%);
-    }
+/* Contenu centré */
+.container {
+    text-align: center;
+    z-index: 10;
 }
 
 h1 {
-    font-size: 60px;
-    text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff;
+    font-size: 3rem;
+    margin-bottom: 10px;
 }
 
+p {
+    font-size: 1.2rem;
+    opacity: 0.8;
+}
+
+/* Bouton */
 .btn {
-    margin-top: 30px;
-    padding: 15px 40px;
-    background: #ff00ff;
-    border: none;
-    font-size: 25px;
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 25px;
+    font-size: 1.2rem;
     color: white;
-    cursor: pointer;
-    text-shadow: 0 0 5px #fff;
-    box-shadow: 0 0 15px #ff00ff, 0 0 25px #00ffff;
-    transition: 0.2s;
+    background: #1a1a1a;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: 0.3s ease;
 }
 
 .btn:hover {
-    transform: scale(1.15);
-    box-shadow: 0 0 20px #ff00ff, 0 0 35px #00ffff;
+    background: white;
+    color: black;
 }
