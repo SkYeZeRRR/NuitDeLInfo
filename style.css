@@ -1,23 +1,31 @@
 body {
     margin: 0;
-    padding: 0;
-    overflow: hidden;
-    font-family: 'ArcadeClassic', sans-serif;
-    color: #fff;
-}
-/* ============================
-   🎮 Contenu
-   ============================ */
-
-.container {
-    position: relative;
-    z-index: 10;
     height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
+    overflow: hidden;
+    background: black;
+}
+
+/* Animation des étoiles */
+body::before {
+    content: "";
+    position: absolute;
+    top: -200%;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    background: url('https://www.transparenttextures.com/patterns/stardust.png');
+    animation: starMove 40s linear infinite;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+@keyframes starMove {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(100%);
+    }
 }
 
 h1 {
