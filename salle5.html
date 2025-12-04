@@ -2,114 +2,172 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Salle 5 – Libre ou Pas Libre ?</title>
-    <link rel="stylesheet" href="salle5-libre-ou-pas-libre.css">
+    <title>Salle 5 - Libre ou Propriétaire ?</title>
+    <link rel="stylesheet" href="salle5-libre.css">
 </head>
 <body>
-    <main class="game-libre-proprio">
+    <div class="game-wrapper">
         <header class="game-header">
-            <h1>Salle 5 – Libre ou Pas Libre ?</h1>
-            <p>Clique sur chaque logiciel pour le placer dans la bonne colonne : <strong>Libre</strong> ou <strong>Propriétaire</strong>.</p>
+            <h1 class="game-title">Salle 5 — Libre ou Pas Libre ?</h1>
+            <p class="game-subtitle">
+                Fais glisser chaque logiciel dans la bonne colonne, mon petit manchot du NIRD.
+            </p>
         </header>
 
-        <section class="board">
-            <!-- Colonne source -->
-            <div class="column column-source">
-                <h2>À classer</h2>
-                <div class="item-list" id="source-list">
-                    <button class="item" data-answer="libre">LibreOffice</button>
-                    <button class="item" data-answer="libre">Firefox</button>
-                    <button class="item" data-answer="proprietaire">Windows</button>
-                    <button class="item" data-answer="proprietaire">Microsoft Word</button>
-                    <button class="item" data-answer="libre">GIMP</button>
-                    <button class="item" data-answer="proprietaire">Photoshop</button>
+        <main class="game-card">
+            <section class="software-pool">
+                <h2 class="section-title">Logiciels à classer</h2>
+                <div id="source-zone" class="software-list">
+                    <!-- Chaque logiciel est draggable -->
+                    <div class="software" draggable="true" id="item-libreoffice" data-name="LibreOffice">LibreOffice</div>
+                    <div class="software" draggable="true" id="item-firefox" data-name="Firefox">Firefox</div>
+                    <div class="software" draggable="true" id="item-windows" data-name="Windows">Windows</div>
+                    <div class="software" draggable="true" id="item-word" data-name="Word">Microsoft Word</div>
+                    <div class="software" draggable="true" id="item-gimp" data-name="GIMP">GIMP</div>
+                    <div class="software" draggable="true" id="item-photoshop" data-name="Photoshop">Photoshop</div>
+                    <div class="software" draggable="true" id="item-ubuntu" data-name="Ubuntu">Ubuntu</div>
+                    <div class="software" draggable="true" id="item-macos" data-name="macOS">macOS</div>
+                    <div class="software" draggable="true" id="item-vlc" data-name="VLC">VLC</div>
+                    <div class="software" draggable="true" id="item-chrome" data-name="Chrome">Google Chrome</div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Colonne Libre -->
-            <div class="column column-libre">
-                <h2>Logiciels LIBRES</h2>
-                <div class="item-list" id="libre-list" data-type="libre"></div>
-            </div>
+            <section class="drop-area">
+                <div class="drop-column">
+                    <h2 class="section-title drop-title">📂 Logiciel LIBRE</h2>
+                    <div id="zone-libre" class="drop-zone" data-type="libre">
+                        <p class="drop-hint">Dépose ici les logiciels libres</p>
+                    </div>
+                </div>
 
-            <!-- Colonne Propriétaire -->
-            <div class="column column-proprio">
-                <h2>Logiciels PROPRIÉTAIRES</h2>
-                <div class="item-list" id="proprio-list" data-type="proprietaire"></div>
-            </div>
-        </section>
+                <div class="drop-column">
+                    <h2 class="section-title drop-title">🔒 Logiciel PROPRIÉTAIRE</h2>
+                    <div id="zone-proprio" class="drop-zone" data-type="proprietaire">
+                        <p class="drop-hint">Dépose ici les logiciels propriétaires</p>
+                    </div>
+                </div>
+            </section>
+        </main>
 
-        <section class="controls">
-            <button id="btn-reset">Réinitialiser</button>
-            <button id="btn-check">Vérifier</button>
-            <p id="feedback"></p>
-        </section>
-    </main>
+        <footer class="game-footer">
+            <div class="button-row">
+                <button id="check-btn" class="btn primary">Vérifier mes réponses</button>
+                <button id="reset-btn" class="btn ghost">Réinitialiser</button>
+            </div>
+            <p id="result-text" class="result-text"></p>
+        </footer>
+    </div>
 
     <script>
-        const lists = {
-            source: document.getElementById('source-list'),
-            libre: document.getElementById('libre-list'),
-            proprietaire: document.getElementById('proprio-list')
+        // Réponses officielles
+        const answers = {
+            "LibreOffice": "libre",
+            "Firefox": "libre",
+            "Windows": "proprietaire",
+            "Word": "proprietaire",
+            "GIMP": "libre",
+            "Photoshop": "proprietaire",
+            "Ubuntu": "libre",
+            "macOS": "proprietaire",
+            "VLC": "libre",
+            "Chrome": "proprietaire"
         };
 
-        // Initialisation de la position des items
-        document.querySelectorAll('.item').forEach(item => {
-            item.dataset.location = 'source';
+        const softwares = document.querySelectorAll(".software");
+        const dropZones = document.querySelectorAll(".drop-zone, #source-zone");
+        const checkBtn = document.getElementById("check-btn");
+        const resetBtn = document.getElementById("reset-btn");
+        const resultText = document.getElementById("result-text");
+        const sourceZone = document.getElementById("source-zone");
 
-            // Clic = on fait tourner : source -> libre -> propriétaire -> source
-            item.addEventListener('click', () => {
-                const current = item.dataset.location;
-                let next;
+        let draggedItem = null;
 
-                if (current === 'source') {
-                    next = 'libre';
-                } else if (current === 'libre') {
-                    next = 'proprietaire';
-                } else {
-                    next = 'source';
-                }
+        // Drag start
+        softwares.forEach(item => {
+            item.addEventListener("dragstart", (e) => {
+                draggedItem = e.target;
+                e.dataTransfer.setData("text/plain", e.target.id);
+                setTimeout(() => {
+                    e.target.classList.add("dragging");
+                }, 0);
+            });
 
-                lists[next].appendChild(item);
-                item.dataset.location = next;
+            item.addEventListener("dragend", (e) => {
+                e.target.classList.remove("dragging");
+            });
+        });
+
+        // Gestion des zones de dépôt
+        dropZones.forEach(zone => {
+            zone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                zone.classList.add("drop-hover");
+            });
+
+            zone.addEventListener("dragleave", () => {
+                zone.classList.remove("drop-hover");
+            });
+
+            zone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                zone.classList.remove("drop-hover");
+                const id = e.dataTransfer.getData("text/plain");
+                const item = document.getElementById(id);
+                zone.appendChild(item);
+                clearFeedback();
             });
         });
 
         // Vérifier les réponses
-        document.getElementById('btn-check').addEventListener('click', () => {
-            let score = 0;
-            const items = document.querySelectorAll('.item');
+        checkBtn.addEventListener("click", () => {
+            let total = 0;
+            let correct = 0;
 
-            items.forEach(item => {
-                const expected = item.dataset.answer; // libre / proprietaire
-                const loc = item.dataset.location;
+            // Réinitialise les classes de feedback
+            document.querySelectorAll(".software").forEach(item => {
+                item.classList.remove("correct", "wrong");
+            });
 
-                item.classList.remove('correct', 'wrong');
+            // Vérifie chaque logiciel
+            document.querySelectorAll(".software").forEach(item => {
+                const name = item.dataset.name;
+                const parentZone = item.parentElement;
+                const targetType = parentZone.dataset.type; // "libre" ou "proprietaire"
 
-                if (loc === expected) {
-                    score++;
-                    item.classList.add('correct');
-                } else if (loc !== 'source') {
-                    item.classList.add('wrong');
+                if (!answers[name]) return;
+
+                total++;
+
+                if (targetType && answers[name] === targetType) {
+                    correct++;
+                    item.classList.add("correct");
+                } else if (targetType) {
+                    item.classList.add("wrong");
                 }
             });
 
-            const feedback = document.getElementById('feedback');
-            feedback.textContent = `Score : ${score} / ${items.length}`;
+            if (correct === total && total > 0) {
+                resultText.textContent = "Parfait, petit génie du libre ! 🎉 Tu as tout bien classé.";
+                resultText.className = "result-text success";
+            } else {
+                resultText.textContent = `Score : ${correct} / ${total}. Continue, petit pingouin, tu vas y arriver !`;
+                resultText.className = "result-text warning";
+            }
         });
 
         // Réinitialiser
-        document.getElementById('btn-reset').addEventListener('click', () => {
-            const items = document.querySelectorAll('.item');
-
-            items.forEach(item => {
-                lists.source.appendChild(item);
-                item.dataset.location = 'source';
-                item.classList.remove('correct', 'wrong');
+        resetBtn.addEventListener("click", () => {
+            document.querySelectorAll(".software").forEach(item => {
+                sourceZone.appendChild(item);
+                item.classList.remove("correct", "wrong");
             });
-
-            document.getElementById('feedback').textContent = '';
+            clearFeedback();
         });
+
+        function clearFeedback() {
+            resultText.textContent = "";
+            resultText.className = "result-text";
+        }
     </script>
 </body>
 </html>

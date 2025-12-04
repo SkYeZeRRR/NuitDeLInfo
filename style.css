@@ -1,51 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* --- Fond étoilé animé --- */
 body {
     margin: 0;
-    padding: 0;
     overflow: hidden;
-    font-family: 'ArcadeClassic', sans-serif;
-    color: #fff;
+    background: #000015;
+    font-family: 'Press Start 2P', cursive;
+    color: white;
 }
 
-/* ============================
-   🌌 Fond étoilé animé
-   ============================ */
-
-.stars {
-    width: 100%;
-    height: 100vh;
-    background: black;
-    position: absolute;
+/* Couches d'étoiles animées */
+.stars, .stars2, .stars3 {
+    position: fixed;
     top: 0;
     left: 0;
-    overflow: hidden;
+    width: 200%;
+    height: 200%;
+    background-repeat: repeat;
+    background-size: contain;
+    pointer-events: none;
 }
 
-.stars::after {
-    content: "";
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background:
-        radial-gradient(2px 2px at 10% 20%, white 50%, transparent 50%) repeat,
-        radial-gradient(2px 2px at 80% 40%, white 50%, transparent 50%) repeat,
-        radial-gradient(2px 2px at 50% 70%, white 50%, transparent 50%) repeat;
-    background-size: 3px 3px;
-    animation: starfield 40s linear infinite;
-    opacity: 0.7;
+.stars {
+    background-image: url("https://www.transparenttextures.com/patterns/stardust.png");
+    animation: moveStars 60s linear infinite;
+    opacity: 0.6;
 }
 
-@keyframes starfield {
+.stars2 {
+    background-image: url("https://www.transparenttextures.com/patterns/stardust.png");
+    animation: moveStars2 120s linear infinite;
+    opacity: 0.4;
+}
+
+.stars3 {
+    background-image: url("https://www.transparenttextures.com/patterns/stardust.png");
+    animation: moveStars3 180s linear infinite;
+    opacity: 0.2;
+}
+
+/* Animations */
+@keyframes moveStars {
     from { transform: translateY(0); }
-    to { transform: translateY(2000px); }
+    to   { transform: translateY(-50%); }
 }
 
-/* ============================
-   🎮 Contenu
-   ============================ */
+@keyframes moveStars2 {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-30%); }
+}
 
+@keyframes moveStars3 {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-20%); }
+}
+
+/* --- Contenu centré --- */
 .container {
     position: relative;
-    z-index: 10;
+    z-index: 1;
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -54,25 +67,29 @@ body {
     text-align: center;
 }
 
-h1 {
-    font-size: 60px;
-    text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff;
+/* --- Titre arcade --- */
+.arcade-title {
+    font-size: 1.6rem;
+    color: #00eaff;
+    text-shadow: 0px 0px 10px #00eaff, 0px 0px 20px #0088ff;
+    margin-bottom: 40px;
 }
 
-.btn {
-    margin-top: 30px;
-    padding: 15px 40px;
-    background: #ff00ff;
-    border: none;
-    font-size: 25px;
-    color: white;
-    cursor: pointer;
-    text-shadow: 0 0 5px #fff;
-    box-shadow: 0 0 15px #ff00ff, 0 0 25px #00ffff;
-    transition: 0.2s;
+/* --- Bouton arcade --- */
+.arcade-btn {
+    text-decoration: none;
+    font-size: 1.2rem;
+    color: #000;
+    background: #00eaff;
+    padding: 15px 35px;
+    border: 4px solid white;
+    border-radius: 10px;
+    box-shadow: 0px 0px 15px #00eaff;
+    transition: 0.15s ease;
 }
 
-.btn:hover {
-    transform: scale(1.15);
-    box-shadow: 0 0 20px #ff00ff, 0 0 35px #00ffff;
+.arcade-btn:hover {
+    transform: scale(1.1);
+    background: #ffffff;
+    box-shadow: 0px 0px 25px #00eaff;
 }
