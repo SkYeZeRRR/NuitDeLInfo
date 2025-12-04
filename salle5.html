@@ -1,11 +1,115 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Salle 5 – Libre ou Pas Libre ?</title>
+    <link rel="stylesheet" href="salle5-libre-ou-pas-libre.css">
 </head>
 <body>
-    <p>hello</p>
+    <main class="game-libre-proprio">
+        <header class="game-header">
+            <h1>Salle 5 – Libre ou Pas Libre ?</h1>
+            <p>Clique sur chaque logiciel pour le placer dans la bonne colonne : <strong>Libre</strong> ou <strong>Propriétaire</strong>.</p>
+        </header>
+
+        <section class="board">
+            <!-- Colonne source -->
+            <div class="column column-source">
+                <h2>À classer</h2>
+                <div class="item-list" id="source-list">
+                    <button class="item" data-answer="libre">LibreOffice</button>
+                    <button class="item" data-answer="libre">Firefox</button>
+                    <button class="item" data-answer="proprietaire">Windows</button>
+                    <button class="item" data-answer="proprietaire">Microsoft Word</button>
+                    <button class="item" data-answer="libre">GIMP</button>
+                    <button class="item" data-answer="proprietaire">Photoshop</button>
+                </div>
+            </div>
+
+            <!-- Colonne Libre -->
+            <div class="column column-libre">
+                <h2>Logiciels LIBRES</h2>
+                <div class="item-list" id="libre-list" data-type="libre"></div>
+            </div>
+
+            <!-- Colonne Propriétaire -->
+            <div class="column column-proprio">
+                <h2>Logiciels PROPRIÉTAIRES</h2>
+                <div class="item-list" id="proprio-list" data-type="proprietaire"></div>
+            </div>
+        </section>
+
+        <section class="controls">
+            <button id="btn-reset">Réinitialiser</button>
+            <button id="btn-check">Vérifier</button>
+            <p id="feedback"></p>
+        </section>
+    </main>
+
+    <script>
+        const lists = {
+            source: document.getElementById('source-list'),
+            libre: document.getElementById('libre-list'),
+            proprietaire: document.getElementById('proprio-list')
+        };
+
+        // Initialisation de la position des items
+        document.querySelectorAll('.item').forEach(item => {
+            item.dataset.location = 'source';
+
+            // Clic = on fait tourner : source -> libre -> propriétaire -> source
+            item.addEventListener('click', () => {
+                const current = item.dataset.location;
+                let next;
+
+                if (current === 'source') {
+                    next = 'libre';
+                } else if (current === 'libre') {
+                    next = 'proprietaire';
+                } else {
+                    next = 'source';
+                }
+
+                lists[next].appendChild(item);
+                item.dataset.location = next;
+            });
+        });
+
+        // Vérifier les réponses
+        document.getElementById('btn-check').addEventListener('click', () => {
+            let score = 0;
+            const items = document.querySelectorAll('.item');
+
+            items.forEach(item => {
+                const expected = item.dataset.answer; // libre / proprietaire
+                const loc = item.dataset.location;
+
+                item.classList.remove('correct', 'wrong');
+
+                if (loc === expected) {
+                    score++;
+                    item.classList.add('correct');
+                } else if (loc !== 'source') {
+                    item.classList.add('wrong');
+                }
+            });
+
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = `Score : ${score} / ${items.length}`;
+        });
+
+        // Réinitialiser
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            const items = document.querySelectorAll('.item');
+
+            items.forEach(item => {
+                lists.source.appendChild(item);
+                item.dataset.location = 'source';
+                item.classList.remove('correct', 'wrong');
+            });
+
+            document.getElementById('feedback').textContent = '';
+        });
+    </script>
 </body>
 </html>
