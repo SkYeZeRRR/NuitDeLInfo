@@ -1,0 +1,215 @@
+:root {
+    --neon-purple: #c084fc;
+    --neon-blue: #60a5fa;
+    --neon-cyan: #22d3ee;
+    --neon-pink: #fb7185;
+    --bg: #020617;
+    --panel: rgba(15, 23, 42, 0.95);
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+}
+
+/* Fond global cyberpunk */
+body {
+    margin: 0;
+    font-family: 'Press Start 2P', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background:
+        radial-gradient(circle at top, rgba(96,165,250,0.25), transparent 60%),
+        radial-gradient(circle at bottom, rgba(236,72,153,0.2), transparent 60%),
+        #020617;
+    color: var(--text);
+}
+
+/* Cadre principal */
+.map-wrapper {
+    width: 90%;
+    max-width: 1000px;
+    background: var(--panel);
+    border-radius: 18px;
+    padding: 16px 18px 20px;
+    border: 2px solid var(--neon-purple);
+    box-shadow:
+        0 0 18px rgba(192,132,252,0.8),
+        0 0 40px rgba(96,165,250,0.45);
+}
+
+/* Header */
+.map-header {
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.map-header h1 {
+    font-size: 1.3rem;
+    color: var(--neon-purple);
+    text-shadow: 0 0 8px var(--neon-purple);
+}
+
+.map-header h2 {
+    font-size: 0.8rem;
+    margin-top: 6px;
+    color: var(--neon-blue);
+}
+
+.map-header p {
+    font-size: 0.55rem;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+/* Plateau */
+.map-board {
+    position: relative;
+    margin: 0 auto;
+    margin-top: 6px;
+    width: 100%;
+    max-width: 900px;
+    aspect-ratio: 16 / 9;
+    background-image:
+        linear-gradient(rgba(15,23,42,0.9) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15,23,42,0.9) 1px, transparent 1px),
+        radial-gradient(circle at 20% 0%, rgba(56,189,248,0.16), transparent 55%),
+        radial-gradient(circle at 90% 100%, rgba(248,113,113,0.18), transparent 55%),
+        #020617;
+    background-size:
+        32px 32px,
+        32px 32px,
+        auto,
+        auto,
+        auto;
+    border-radius: 14px;
+    border: 2px solid rgba(148,163,184,0.5);
+    box-shadow:
+        inset 0 0 18px rgba(15,23,42,0.95),
+        0 0 18px rgba(15,23,42,0.9);
+    overflow: hidden;
+}
+
+/* Chemins cyberpunk (surbrillance violette) */
+.path {
+    position: absolute;
+    background: var(--neon-purple);
+    box-shadow: 0 0 12px var(--neon-purple);
+    border-radius: 999px;
+}
+
+/* 1 ↔ 2 (bas gauche -> bas milieu) */
+.p1 {
+    bottom: 16%;
+    left: 14%;
+    width: 30%;
+    height: 6px;
+}
+
+/* 2 ↔ 3 (bas milieu -> bas droite) */
+.p2 {
+    bottom: 16%;
+    left: 44%;
+    width: 30%;
+    height: 6px;
+}
+
+/* 3 ↔ 4 (vertical droite) */
+.p3 {
+    bottom: 16%;
+    left: 73%;
+    width: 6px;
+    height: 26%;
+}
+
+/* 4 ↔ 5 (horizontal au milieu) */
+.p4 {
+    bottom: 42%;
+    left: 38%;
+    width: 32%;
+    height: 6px;
+}
+
+/* 5 ↔ 6 (vertical bien centré sur 6) */
+.p5 {
+    bottom: 42%;
+    left: 46%;
+    width: 6px;
+    height: 26%;
+}
+
+/* Niveaux (ronds néon vus de haut) */
+.level-node {
+    position: absolute;
+    width: 78px;
+    height: 78px;
+    border-radius: 999px;
+    background:
+        radial-gradient(circle at 30% 20%, #fdf2ff, #e879f9 35%, #6b21a8 100%);
+    border: 3px solid #f9a8ff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #020617;
+    text-align: center;
+    box-shadow:
+        0 0 12px rgba(244,114,182,0.9),
+        0 0 26px rgba(129,140,248,0.7);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.level-node:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow:
+        0 0 18px rgba(244,114,182,1),
+        0 0 32px rgba(56,189,248,0.9);
+}
+
+/* Labels */
+.node-id {
+    font-size: 0.8rem;
+    text-shadow: 1px 1px 0 #4a044e;
+}
+
+.node-label {
+    margin-top: 4px;
+    font-size: 0.45rem;
+    text-transform: uppercase;
+}
+
+/* Positions des niveaux (cohérentes avec les chemins) */
+/* Ligne du bas : 1, 2, 3 */
+.lvl1 { bottom: 12%; left: 10%; }
+.lvl2 { bottom: 12%; left: 40%; }
+.lvl3 { bottom: 12%; left: 70%; }
+
+/* Milieu : 4, 5 */
+.lvl4 { bottom: 38%; left: 70%; }
+.lvl5 { bottom: 38%; left: 40%; }
+
+/* Haut : 6 (aligné avec le trait p5) */
+.lvl6 { bottom: 64%; left: 40%; }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .map-wrapper {
+        padding: 12px;
+    }
+    .map-board {
+        width: 100%;
+    }
+    .level-node {
+        width: 64px;
+        height: 64px;
+    }
+    .node-label {
+        font-size: 0.4rem;
+    }
+}
+/* Style quand tous les niveaux sont terminés */
+.level-node .node-id.completed {
+    color: #22c55e;
+    text-shadow: 0 0 10px rgba(34, 197, 94, 0.9);
+}

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>World Map — Niveaux NIRD</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/map.css">
+</head>
+<body>
+<div class="map-wrapper">
+    <header class="map-header">
+        <h1>WORLD MAP</h1>
+        <h2>Niveaux NIRD — Sélection</h2>
+        <p>Choisis un niveau pour entrer dans la salle correspondante.</p>
+    </header>
+
+    <main class="map-board">
+        <!-- Chemins -->
+        <div class="path p1"></div> <!-- 1 ↔ 2 -->
+        <div class="path p2"></div> <!-- 2 ↔ 3 -->
+        <div class="path p3"></div> <!-- 3 ↔ 4 -->
+        <div class="path p4"></div> <!-- 4 ↔ 5 -->
+        <div class="path p5"></div> <!-- 5 ↔ 6 -->
+
+        <!-- Niveaux -->
+        <a href="salles/salle1.html" class="level-node lvl1">
+            <span class="node-id">01</span>
+            <span class="node-label">Obsolescence</span>
+        </a>
+
+        <a href="salles/salle2.html" class="level-node lvl2">
+            <span class="node-id">02</span>
+            <span class="node-label">Linux</span>
+        </a>
+
+        <a href="salles/salle3.html" class="level-node lvl3">
+            <span class="node-id">03</span>
+            <span class="node-label">Matériel</span>
+        </a>
+
+        <a href="salles/salle4.html" class="level-node lvl4">
+            <span class="node-id">04</span>
+            <span class="node-label">Cloud</span>
+        </a>
+
+        <a href="salles/salle5.html" class="level-node lvl5">
+            <span class="node-id">05</span>
+            <span class="node-label">Logiciels libres</span>
+        </a>
+
+        <a href="salles/salle6.html" class="level-node lvl6">
+            <span class="node-id">06</span>
+            <span class="node-label">Sobriété</span>
+        </a>
+    </main>
+</div>
+
+<!-- Script de progression : passe tous les numéros en vert si tout est terminé -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Si la salle 6 a posé le flag de fin dans le localStorage
+    if (localStorage.getItem('nird_all_completed') === 'true') {
+        // On ajoute la classe "completed" à tous les numéros de niveau
+        document.querySelectorAll('.level-node .node-id').forEach(node => {
+            node.classList.add('completed');
+        });
+    }
+});
+</script>
+</body>
+</html>
