@@ -1,4 +1,3 @@
-
 :root {
     --neon-purple: #c084fc;
     --neon-blue: #60a5fa;
@@ -213,4 +212,21 @@ body {
 .level-node .node-id.completed {
     color: #22c55e;
     text-shadow: 0 0 10px rgba(34, 197, 94, 0.9);
+}
+
+    .snake-tail-link {
+    position: absolute;
+    bottom: 13%;      /* même coordonnées que l'image */
+    left: 37%;
+    width: 50px;     /* largeur cliquable */
+    height: 160px;    /* hauteur cliquable */
+    display: block;
+    z-index: 20;
+}
+
+.snake-tail {
+    position: absolute;
+    width: 50px;
+    pointer-events: none; /* on laisse le clic passer au lien */
+    transform: rotate(12deg);
 }

@@ -1,0 +1,340 @@
+:root {
+    --bg-color: #050816;
+    --bg-gradient: radial-gradient(circle at top, #1f2937 0, #050816 55%);
+    --card-bg: rgba(15, 23, 42, 0.95);
+    --card-border: #38bdf8;
+    --accent: #facc15;
+    --accent-soft: rgba(250, 204, 21, 0.15);
+    --success: #22c55e;
+    --error: #ef4444;
+    --text-main: #e5e7eb;
+    --text-muted: #9ca3af;
+    --shadow-strong: 0 20px 40px rgba(0, 0, 0, 0.7);
+}
+
+/* Reset léger */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    font-family: "Press Start 2P", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text-main);
+}
+
+/* Wrapper global (comme les autres salles) */
+.game-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Effet "étoiles" léger en fond pour cohérence arcade */
+.game-wrapper::before,
+.game-wrapper::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        radial-gradient(circle at 20% 20%, rgba(148, 163, 184, 0.35) 0, transparent 55%),
+        radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.35) 0, transparent 55%);
+    opacity: 0.15;
+    z-index: -2;
+}
+
+/* Header */
+.game-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.game-title {
+    font-size: 1.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+    margin-bottom: 12px;
+}
+
+.game-subtitle {
+    font-size: 0.65rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+}
+
+.game-subtitle .highlight {
+    color: var(--accent);
+}
+
+/* Plateau de jeu */
+.game-board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    max-width: 1080px;
+    margin: 0 auto;
+}
+
+/* Carte produit */
+.product-card {
+    background: var(--card-bg);
+    border: 2px solid rgba(51, 65, 85, 0.9);
+    border-radius: 18px;
+    padding: 18px 16px 20px;
+    box-shadow: var(--shadow-strong);
+    position: relative;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    overflow: hidden;
+}
+
+.product-card::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: radial-gradient(circle at top, rgba(56, 189, 248, 0.4), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.85);
+    border-color: var(--card-border);
+}
+
+.product-card:hover::before {
+    opacity: 0.35;
+}
+
+.product-card.solved {
+    border-color: var(--success);
+}
+
+/* Animation quand carte résolue */
+@keyframes cardPulse {
+    0% {
+        transform: translateY(-4px) scale(1);
+    }
+    50% {
+        transform: translateY(-6px) scale(1.02);
+    }
+    100% {
+        transform: translateY(-4px) scale(1);
+    }
+}
+
+.card-pulse {
+    animation: cardPulse 0.6s ease-out;
+}
+
+/* Header de la carte produit */
+.product-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.product-title {
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* "Images" des produits */
+.product-image {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(15, 23, 42, 0.9));
+    border: 1px solid rgba(148, 163, 184, 0.7);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.8);
+    flex-shrink: 0;
+    position: relative;
+}
+
+.product-image-phone::before,
+.product-image-printer::before,
+.product-image-pc::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.product-image-phone::before {
+    content: "📱";
+}
+
+.product-image-printer::before {
+    content: "🖨️";
+}
+
+.product-image-pc::before {
+    content: "💻";
+}
+
+/* Texte d’indice */
+.product-hint {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    line-height: 1.6;
+}
+
+/* Conteneur des options */
+.options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+/* Boutons réponse version arcade néon */
+.option {
+    font-family: inherit;
+    font-size: 0.6rem;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 2px solid rgba(148, 163, 184, 0.65);
+    background: rgba(10, 15, 28, 0.95);
+    color: var(--text-main);
+    cursor: pointer;
+    transition:
+        background 0.25s ease,
+        transform 0.15s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.option:hover {
+    border-color: var(--accent);
+    background: rgba(40, 60, 110, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 0 12px rgba(250, 200, 50, 0.45),
+                inset 0 0 12px rgba(250, 200, 50, 0.25);
+}
+
+.option:active {
+    transform: translateY(1px) scale(0.97);
+}
+
+/* Effet flashy réussite / erreur */
+.option-correct {
+    border-color: var(--success);
+    background: rgba(34, 197, 94, 0.25);
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
+}
+
+.option-wrong {
+    border-color: var(--error);
+    background: rgba(239, 68, 68, 0.25);
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+}
+
+/* Feedback sous chaque carte */
+.feedback {
+    font-size: 0.55rem;
+    line-height: 1.5;
+    color: var(--accent);
+    min-height: 1.2em;
+}
+
+/* Footer / message global */
+.game-footer {
+    margin-top: 26px;
+    text-align: center;
+}
+
+.global-message {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+}
+
+.global-message-success {
+    color: var(--success);
+}
+
+/* Boutons de navigation en bas */
+.footer-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.btn-nav {
+    font-family: "Press Start 2P";
+    font-size: 0.55rem;
+    padding: 10px 18px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: white;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border: 2px solid #38bdf8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.45);
+    transition: all 0.25s ease;
+}
+
+.btn-nav:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.7);
+}
+
+/* Bouton Terminé caché par défaut */
+.btn-termine {
+    display: none;
+    border-color: var(--success);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.45);
+}
+
+/* Bouton Suivant caché par défaut */
+.btn-suivant {
+    display: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 14px rgba(250, 200, 50, 0.45);
+}
+
+/* Affichage quand le jeu est complété */
+.btn-termine.show,
+.btn-suivant.show {
+    display: inline-block;
+    animation: popIn 0.5s ease-out;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.6); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .game-wrapper {
+        padding: 16px 10px 20px;
+    }
+
+    .game-title {
+        font-size: 1.1rem;
+    }
+
+    .game-subtitle {
+        font-size: 0.58rem;
+    }
+}
