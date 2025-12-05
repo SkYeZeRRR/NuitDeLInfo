@@ -1,11 +1,248 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <title>Bienvenue dans l'aventure du NIRD</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Police style arcade -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-color: #020617;       /* bleu nuit */
+      --accent: #38bdf8;         /* bleu néon */
+      --accent-soft: #0f172a;    /* bleu très foncé */
+      --text-color: #e5e7eb;
+      --button-hover: #0ea5e9;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Press Start 2P', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Canvas fond étoilé */
+    #starfield {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: radial-gradient(circle at top, #1f2937 0, #020617 50%, #000 100%);
+    }
+
+    /* Contenu centré */
+    .wrapper {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.9);
+      border: 2px solid #334155;
+      border-radius: 1rem;
+      padding: 2.5rem 2rem;
+      max-width: 800px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
+      backdrop-filter: blur(8px);
+    }
+
+    .title {
+      font-size: 1.2rem;
+      line-height: 1.6;
+      text-transform: uppercase;
+      text-shadow: 0 0 6px rgba(56, 189, 248, 0.9);
+      margin-bottom: 1.75rem;
+    }
+
+    .subtitle {
+      font-size: 0.7rem;
+      line-height: 1.8;
+      color: #9ca3af;
+      margin-bottom: 2.25rem;
+    }
+
+    .btn-go {
+      display: inline-block;
+      padding: 1rem 2.5rem;
+      font-size: 0.9rem;
+      border-radius: 999px;
+      border: 3px solid var(--accent);
+      background: linear-gradient(135deg, #020617, #0f172a);
+      color: var(--accent);
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.7);
+      position: relative;
+      overflow: hidden;
+      transition:
+        transform 0.15s ease-out,
+        box-shadow 0.15s ease-out,
+        background 0.15s ease-out;
+    }
+
+    .btn-go::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(248, 250, 252, 0.8),
+        transparent
+      );
+      transform: skewX(-20deg);
+      transition: left 0.4s ease-out;
+    }
+
+    .btn-go:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 0 24px rgba(56, 189, 248, 1);
+      background: linear-gradient(135deg, #020617, #082f49);
+    }
+
+    .btn-go:hover::before {
+      left: 100%;
+    }
+
+    .btn-go:active {
+      transform: translateY(0) scale(0.98);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
+    }
+
+    .hint {
+      margin-top: 1.75rem;
+      font-size: 0.55rem;
+      color: #6b7280;
+      letter-spacing: 0.08em;
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        padding: 1.75rem 1.25rem;
+      }
+
+      .title {
+        font-size: 1rem;
+      }
+
+      .subtitle {
+        font-size: 0.6rem;
+      }
+
+      .btn-go {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
-    <p>hello</p>
+  <!-- Fond étoilé animé -->
+  <canvas id="starfield"></canvas>
+
+  <!-- Contenu -->
+  <div class="wrapper">
+    <div class="card">
+      <h1 class="title">
+        Bienvenue dans l'aventure du NIRD
+      </h1>
+      <p class="subtitle">
+        Prépare ton petit cœur de héros écolo&nbsp;: chaque clic, chaque choix, chaque pixel
+        compte dans ta quête de sobriété numérique. Quand tu te sens prêt, appuie sur GO
+        et entre dans le labyrinthe des 6 salles du NIRD…
+      </p>
+      <button  class="btn-go" id="btnGo">
+        GO&nbsp;!
+      </button>
+      <p class="hint">
+        Conseil de ton NIRD-maître&nbsp;: mets le son, éteins la lumière et lance l’aventure.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // === Starfield animé ===
+    const canvas = document.getElementById('starfield');
+    const ctx = canvas.getContext('2d');
+
+    let stars = [];
+    const numStars = 250;       // nombre d'étoiles
+    const starSpeed = 0.4;      // vitesse globale
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      initStars();
+    });
+
+    function initStars() {
+      stars = [];
+      for (let i = 0; i < numStars; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          z: Math.random() * 1 + 0.2, // profondeur (taille / vitesse)
+        });
+      }
+    }
+
+    function drawStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (const star of stars) {
+        // mouvement "vers le bas"
+        star.y += starSpeed * star.z * 2;
+
+        // si l'étoile sort de l'écran, on la remet en haut
+        if (star.y > canvas.height) {
+          star.y = 0;
+          star.x = Math.random() * canvas.width;
+          star.z = Math.random() * 1 + 0.2;
+        }
+
+        const size = star.z * 2; // taille de l'étoile
+        ctx.fillStyle = `rgba(248, 250, 252, ${0.5 + star.z / 2})`;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      requestAnimationFrame(drawStars);
+    }
+
+    resizeCanvas();
+    initStars();
+    drawStars();
+
+    // === Action du bouton GO ===
+    const btnGo = document.getElementById('btnGo');
+    btnGo.addEventListener('click', () => {
+      // Ici tu peux rediriger vers ta page de jeu
+      // Exemple :
+        window.location.href = "map.html";
+    });
+  </script>
 </body>
 </html>

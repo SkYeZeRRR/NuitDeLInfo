@@ -1,11 +1,156 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Salle 1 — Trouve l’arnaque</title>
+
+    <!-- Police arcade / pixel -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <!-- CSS de la salle -->
+    <link rel="stylesheet" href="salle1-obsolescence.css">
 </head>
 <body>
-    <p>hello</p>
+<div class="game-wrapper">
+    <header class="game-header">
+        <h1 class="game-title">Salle 1 — Obsolescence programmée</h1>
+        <p class="game-subtitle">
+            Mini-jeu : <span class="highlight">“Trouve l’arnaque”</span> 💣<br>
+            Pour chaque produit, clique sur l’élément qui provoque l’obsolescence.
+        </p>
+    </header>
+
+    <main class="game-board">
+        <!-- Carte produit : Smartphone -->
+        <section class="product-card" data-product="phone">
+            <div class="product-header">
+                <div class="product-image product-image-phone" aria-hidden="true"></div>
+                <h2 class="product-title">Smartphone</h2>
+            </div>
+            <p class="product-hint">
+                Quel est l’élément qui te pousse à jeter le téléphone plus tôt que prévu ?
+            </p>
+            <div class="options">
+                <button class="option" data-correct="false">
+                    Coque brillante
+                </button>
+                <button class="option" data-correct="true">
+                    Batterie collée
+                </button>
+                <button class="option" data-correct="false">
+                    Fond d’écran animé
+                </button>
+            </div>
+            <p class="feedback"></p>
+        </section>
+
+        <!-- Carte produit : Imprimante -->
+        <section class="product-card" data-product="printer">
+            <div class="product-header">
+                <div class="product-image product-image-printer" aria-hidden="true"></div>
+                <h2 class="product-title">Imprimante</h2>
+            </div>
+            <p class="product-hint">
+                Où se cache l’arnaque qui bloque l’imprimante alors qu’elle peut encore fonctionner ?
+            </p>
+            <div class="options">
+                <button class="option" data-correct="false">
+                    Câble USB
+                </button>
+                <button class="option" data-correct="true">
+                    Compteur de pages
+                </button>
+                <button class="option" data-correct="false">
+                    Bouton ON/OFF
+                </button>
+            </div>
+            <p class="feedback"></p>
+        </section>
+
+        <!-- Carte produit : PC -->
+        <section class="product-card" data-product="pc">
+            <div class="product-header">
+                <div class="product-image product-image-pc" aria-hidden="true"></div>
+                <h2 class="product-title">Ordinateur</h2>
+            </div>
+            <p class="product-hint">
+                Quel élément rend ton PC lent et presque inutilisable alors qu’il pourrait encore servir ?
+            </p>
+            <div class="options">
+                <button class="option" data-correct="false">
+                    Fonds d’écran de ton chat
+                </button>
+                <button class="option" data-correct="true">
+                    Mises à jour forcées
+                </button>
+                <button class="option" data-correct="false">
+                    Port USB en façade
+                </button>
+            </div>
+            <p class="feedback"></p>
+        </section>
+    </main>
+
+    <footer class="game-footer">
+    <p id="global-message" class="global-message">
+        Démasque les 3 arnaques pour gagner la salle, petit manchot du NIRD 🐧.
+    </p>
+
+    <div class="footer-buttons">
+        <a href="map.html" class="btn-nav btn-retour">← Retour</a>
+        <a href="map.html" class="btn-nav btn-termine" id="btn-termine">Terminé ✔</a>
+    </div>
+</footer>
+
+</div>
+
+<!-- Script du mini-jeu -->
+<script>
+    (function () {
+        const cards = document.querySelectorAll('.product-card');
+        const globalMessage = document.getElementById('global-message');
+
+        function checkAllSolved() {
+            const solvedCount = document.querySelectorAll('.product-card.solved').length;
+            if (solvedCount === cards.length) {
+                globalMessage.textContent =
+                    "Bien joué ! Tu as démasqué toutes les arnaques de l’obsolescence programmée 💥🌍";
+                globalMessage.classList.add('global-message-success');
+
+        // ➜ Affichage du bouton Terminé
+            document.getElementById("btn-termine").classList.add("show");
+    }
+}
+
+
+        cards.forEach(card => {
+            const options = card.querySelectorAll('.option');
+            const feedback = card.querySelector('.feedback');
+
+            options.forEach(option => {
+                option.addEventListener('click', () => {
+                    if (card.classList.contains('solved')) return;
+
+                    const isCorrect = option.dataset.correct === 'true';
+
+                    // Reset état visuel des options
+                    options.forEach(o => o.classList.remove('option-correct', 'option-wrong'));
+
+                    if (isCorrect) {
+                        option.classList.add('option-correct');
+                        feedback.textContent = "Bien joué ! Tu as trouvé l’arnaque 👀";
+                        card.classList.add('solved');
+                        card.classList.add('card-pulse');
+                        setTimeout(() => card.classList.remove('card-pulse'), 600);
+                        checkAllSolved();
+                    } else {
+                        option.classList.add('option-wrong');
+                        feedback.textContent = "Essaie encore, l’arnaque est ailleurs…";
+                    }
+                });
+            });
+        });
+    })();
+</script>
 </body>
 </html>

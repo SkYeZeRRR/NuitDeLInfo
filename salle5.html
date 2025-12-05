@@ -1,11 +1,249 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Salle 5 - Libre ou Propriétaire ?</title>
+    <link rel="stylesheet" href="salle5-libre.css">
 </head>
 <body>
-    <p>hello</p>
+    <!-- Fond de neige animée -->
+    <canvas id="snow"></canvas>
+
+    <div class="game-wrapper">
+        <header class="game-header">
+            <h1 class="game-title">Salle 5 — Libre ou Pas Libre ?</h1>
+            <p class="game-subtitle">
+                Fais glisser chaque logiciel dans la bonne colonne, mon petit manchot du NIRD.
+            </p>
+        </header>
+
+        <main class="game-card">
+            <section class="software-pool">
+                <h2 class="section-title">Logiciels à classer</h2>
+                <div id="source-zone" class="software-list">
+                    <!-- Chaque logiciel est draggable -->
+                    <div class="software" draggable="true" id="item-libreoffice" data-name="LibreOffice">LibreOffice</div>
+                    <div class="software" draggable="true" id="item-firefox" data-name="Firefox">Firefox</div>
+                    <div class="software" draggable="true" id="item-windows" data-name="Windows">Windows</div>
+                    <div class="software" draggable="true" id="item-word" data-name="Word">Microsoft Word</div>
+                    <div class="software" draggable="true" id="item-gimp" data-name="GIMP">GIMP</div>
+                    <div class="software" draggable="true" id="item-photoshop" data-name="Photoshop">Photoshop</div>
+                    <div class="software" draggable="true" id="item-ubuntu" data-name="Ubuntu">Ubuntu</div>
+                    <div class="software" draggable="true" id="item-macos" data-name="macOS">macOS</div>
+                    <div class="software" draggable="true" id="item-vlc" data-name="VLC">VLC</div>
+                    <div class="software" draggable="true" id="item-chrome" data-name="Chrome">Google Chrome</div>
+                </div>
+            </section>
+
+            <section class="drop-area">
+                <div class="drop-column">
+                    <h2 class="section-title drop-title">📂 Logiciel LIBRE</h2>
+                    <div id="zone-libre" class="drop-zone" data-type="libre">
+                        <p class="drop-hint">Dépose ici les logiciels libres</p>
+                    </div>
+                </div>
+
+                <div class="drop-column">
+                    <h2 class="section-title drop-title">🔒 Logiciel PROPRIÉTAIRE</h2>
+                    <div id="zone-proprio" class="drop-zone" data-type="proprietaire">
+                        <p class="drop-hint">Dépose ici les logiciels propriétaires</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="game-footer">
+            <div class="button-row">
+                <button id="check-btn" class="btn primary">Vérifier mes réponses</button>
+                <button id="reset-btn" class="btn ghost">Réinitialiser</button>
+                <button id="back-btn" class="btn ghost">Retour</button>
+                <button id="finish-btn" class="btn primary" style="display:none;">Terminer</button>
+            </div>
+            <p id="result-text" class="result-text"></p>
+        </footer>
+    </div>
+
+    <script>
+        // Réponses officielles
+        const answers = {
+            "LibreOffice": "libre",
+            "Firefox": "libre",
+            "Windows": "proprietaire",
+            "Word": "proprietaire",
+            "GIMP": "libre",
+            "Photoshop": "proprietaire",
+            "Ubuntu": "libre",
+            "macOS": "proprietaire",
+            "VLC": "libre",
+            "Chrome": "proprietaire"
+        };
+
+        const softwares = document.querySelectorAll(".software");
+        const dropZones = document.querySelectorAll(".drop-zone, #source-zone");
+        const checkBtn = document.getElementById("check-btn");
+        const resetBtn = document.getElementById("reset-btn");
+        const backBtn = document.getElementById("back-btn");
+        const finishBtn = document.getElementById("finish-btn");
+        const resultText = document.getElementById("result-text");
+        const sourceZone = document.getElementById("source-zone");
+
+        let draggedItem = null;
+
+        // Drag start
+        softwares.forEach(item => {
+            item.addEventListener("dragstart", (e) => {
+                draggedItem = e.target;
+                e.dataTransfer.setData("text/plain", e.target.id);
+                setTimeout(() => {
+                    e.target.classList.add("dragging");
+                }, 0);
+            });
+
+            item.addEventListener("dragend", (e) => {
+                e.target.classList.remove("dragging");
+            });
+        });
+
+        // Gestion des zones de dépôt
+        dropZones.forEach(zone => {
+            zone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                zone.classList.add("drop-hover");
+            });
+
+            zone.addEventListener("dragleave", () => {
+                zone.classList.remove("drop-hover");
+            });
+
+            zone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                zone.classList.remove("drop-hover");
+                const id = e.dataTransfer.getData("text/plain");
+                const item = document.getElementById(id);
+                zone.appendChild(item);
+                clearFeedback();
+            });
+        });
+
+        // Vérifier les réponses
+        checkBtn.addEventListener("click", () => {
+            let total = 0;
+            let correct = 0;
+
+            // Réinitialise les classes de feedback
+            document.querySelectorAll(".software").forEach(item => {
+                item.classList.remove("correct", "wrong");
+            });
+
+            // Vérifie chaque logiciel
+            document.querySelectorAll(".software").forEach(item => {
+                const name = item.dataset.name;
+                const parentZone = item.parentElement;
+                const targetType = parentZone.dataset.type; // "libre" ou "proprietaire"
+
+                if (!answers[name]) return;
+
+                total++;
+
+                if (targetType && answers[name] === targetType) {
+                    correct++;
+                    item.classList.add("correct");
+                } else if (targetType) {
+                    item.classList.add("wrong");
+                }
+            });
+
+            if (correct === total && total > 0) {
+                resultText.textContent = "Parfait, petit génie du libre ! 🎉 Tu as tout bien classé.";
+                resultText.className = "result-text success";
+                // Affiche le bouton Terminer quand tout est correct
+                finishBtn.style.display = "inline-block";
+            } else {
+                resultText.textContent = `Score : ${correct} / ${total}. Continue, petit pingouin, tu vas y arriver !`;
+                resultText.className = "result-text warning";
+                // Cache le bouton Terminer si score incomplet
+                finishBtn.style.display = "none";
+            }
+        });
+
+        // Réinitialiser
+        resetBtn.addEventListener("click", () => {
+            document.querySelectorAll(".software").forEach(item => {
+                sourceZone.appendChild(item);
+                item.classList.remove("correct", "wrong");
+            });
+            clearFeedback();
+            // Cache le bouton Terminer au reset
+            finishBtn.style.display = "none";
+        });
+
+        // Retour permanent vers la map
+        backBtn.addEventListener("click", () => {
+            window.location.href = "map.html";
+        });
+
+        // Terminer (visible seulement quand tout est correct)
+        finishBtn.addEventListener("click", () => {
+            window.location.href = "map.html";
+        });
+
+        function clearFeedback() {
+            resultText.textContent = "";
+            resultText.className = "result-text";
+        }
+
+        // =========================
+        //   NEIGE ANIMÉE EN FOND
+        // =========================
+        const snowCanvas = document.getElementById("snow");
+        const snowCtx = snowCanvas.getContext("2d");
+
+        function resizeSnow() {
+            snowCanvas.width = window.innerWidth;
+            snowCanvas.height = window.innerHeight;
+        }
+
+        resizeSnow();
+        window.addEventListener("resize", resizeSnow);
+
+        let flakes = [];
+
+        function createFlakes() {
+            flakes = [];
+            const count = 200;
+            for (let i = 0; i < count; i++) {
+                flakes.push({
+                    x: Math.random() * snowCanvas.width,
+                    y: Math.random() * snowCanvas.height,
+                    radius: Math.random() * 3 + 1,
+                    speed: Math.random() * 1 + 0.5,
+                    drift: Math.random() * 1 - 0.5
+                });
+            }
+        }
+
+        function animateSnow() {
+            snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
+
+            flakes.forEach(flake => {
+                flake.y += flake.speed;
+                flake.x += flake.drift;
+
+                if (flake.y > snowCanvas.height) flake.y = -5;
+                if (flake.x > snowCanvas.width) flake.x = 0;
+                if (flake.x < 0) flake.x = snowCanvas.width;
+
+                snowCtx.beginPath();
+                snowCtx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
+                snowCtx.fillStyle = "white";
+                snowCtx.fill();
+            });
+
+            requestAnimationFrame(animateSnow);
+        }
+
+        createFlakes();
+        animateSnow();
+    </script>
 </body>
 </html>
