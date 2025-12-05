@@ -1,11 +1,198 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <meta charset="UTF-8" />
+    <title>Salle 4 — Recyclage numérique</title>
+
+    <!-- Police arcade / pixel -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <!-- Feuille de style -->
+    <link rel="stylesheet" href="../css/salle4.css">
 </head>
 <body>
-    <p>hello</p>
+<div class="game-wrapper">
+
+    <!-- BOUTON RETOUR -->
+    <a href="../map.html" class="back-btn">← Retour à la map</a>
+
+    <div class="header">
+        <h1>Salle 4 — Recyclage numérique & cycle de vie</h1>
+        <h2>Mini-jeu : “Remets les étapes dans l’ordre” ♻️</h2>
+        <p>Du début à la fin : place les étapes du cycle de vie dans le bon ordre.</p>
+    </div>
+
+    <div class="layout">
+
+        <!-- Panneau principal -->
+        <div class="main-panel">
+            <h3 class="panel-title">Ordre du cycle de vie</h3>
+            <p class="panel-subtitle">
+                Glisse chaque étiquette pour reconstituer le cycle complet d’un équipement numérique.
+            </p>
+
+            <ul id="steps-list" class="steps-list">
+                <!-- On met volontairement dans le désordre -->
+                <li class="step" draggable="true" data-step="Transport">Transport</li>
+                <li class="step" draggable="true" data-step="Fin de vie / Recyclage">Fin de vie / Recyclage</li>
+                <li class="step" draggable="true" data-step="Extraction">Extraction</li>
+                <li class="step" draggable="true" data-step="Usage">Usage</li>
+                <li class="step" draggable="true" data-step="Fabrication">Fabrication</li>
+            </ul>
+        </div>
+
+        <!-- Panneau d’explications -->
+        <aside class="side-panel">
+            <h4>Cycle de vie d’un appareil 🌍</h4>
+            <p class="side-text">
+                Chaque smartphone, PC ou tablette passe par plusieurs grandes étapes qui ont toutes un impact
+                environnemental : consommation d’énergie, de métaux, transport, déchets…
+            </p>
+            <ul class="info-list">
+                <li><strong>Extraction</strong> : métaux rares, minerais, pétrole…</li>
+                <li><strong>Fabrication</strong> : usines, assemblage, forte consommation d’énergie.</li>
+                <li><strong>Transport</strong> : bateaux, camions, avions.</li>
+                <li><strong>Usage</strong> : électricité, réseau, réparations possibles.</li>
+                <li><strong>Fin de vie / Recyclage</strong> : tri, réemploi, recyclage des matériaux.</li>
+            </ul>
+            <p class="side-tip">
+                <span>💡</span> Moins on renouvelle vite nos appareils, plus on réduit l’impact des étapes les plus lourdes
+                (extraction & fabrication).
+            </p>
+        </aside>
+    </div>
+
+    <div class="controls">
+        <button id="check-btn" class="btn-primary">✔ Vérifier</button>
+        <button id="reset-btn" class="btn-secondary">🔁 Reset</button>
+
+        <!-- BOUTON SUIVANT (caché au début) -->
+        <button id="next-btn" class="btn-next" style="display:none;">
+            Suivant → Salle 5
+        </button>
+
+        <div id="feedback" class="feedback">
+            Remets les étapes dans l’ordre : de l’extraction jusqu’à la fin de vie / recyclage.
+        </div>
+    </div>
+</div>
+
+<script>
+    const stepsList = document.getElementById('steps-list');
+    const steps = Array.from(stepsList.querySelectorAll('.step'));
+
+    const checkBtn = document.getElementById('check-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const feedback = document.getElementById('feedback');
+
+    // Ordre correct attendu
+    const correctOrder = [
+        "Extraction",
+        "Fabrication",
+        "Transport",
+        "Usage",
+        "Fin de vie / Recyclage"
+    ];
+
+    // Sauvegarde de l’ordre initial (pour reset)
+    const initialOrder = steps.map(li => li.dataset.step);
+
+    let draggedStep = null;
+
+    // Drag & drop pour réordonner la liste
+    steps.forEach(step => {
+        step.addEventListener('dragstart', () => {
+            draggedStep = step;
+            step.classList.add('dragging');
+        });
+
+        step.addEventListener('dragend', () => {
+            draggedStep = null;
+            step.classList.remove('dragging');
+        });
+
+        step.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        step.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (!draggedStep || draggedStep === step) return;
+
+            const children = Array.from(stepsList.children);
+            const draggedIndex = children.indexOf(draggedStep);
+            const targetIndex = children.indexOf(step);
+
+            if (draggedIndex < targetIndex) {
+                stepsList.insertBefore(draggedStep, step.nextSibling);
+            } else {
+                stepsList.insertBefore(draggedStep, step);
+            }
+
+            clearHighlights();
+        });
+    });
+
+    function clearHighlights() {
+        const allSteps = stepsList.querySelectorAll('.step');
+        allSteps.forEach(li => {
+            li.classList.remove('step-correct', 'step-wrong');
+        });
+        feedback.className = 'feedback';
+    }
+
+    // Vérifier l’ordre
+    checkBtn.addEventListener('click', () => {
+        clearHighlights();
+        const currentSteps = Array.from(stepsList.querySelectorAll('.step'));
+        const currentOrder = currentSteps.map(li => li.dataset.step);
+
+        let correctCount = 0;
+
+        currentSteps.forEach((li, index) => {
+            if (currentOrder[index] === correctOrder[index]) {
+                li.classList.add('step-correct');
+                correctCount++;
+            } else {
+                li.classList.add('step-wrong');
+            }
+        });
+
+        if (correctCount === correctOrder.length) {
+            feedback.textContent = "Parfait ! Tu maîtrises le cycle de vie numérique ♻️✨";
+            feedback.className = "feedback success";
+            nextBtn.style.display = "inline-block"; // afficher le bouton suivant
+        } else {
+            feedback.textContent = `${correctCount}/${correctOrder.length} étapes sont au bon endroit. Ajuste encore l’ordre.`;
+            feedback.className = "feedback error";
+            nextBtn.style.display = "none";
+        }
+    });
+
+    // Reset : remettre dans l’ordre initial (désordre de départ)
+    resetBtn.addEventListener('click', () => {
+        const allSteps = Array.from(stepsList.querySelectorAll('.step'));
+        stepsList.innerHTML = "";
+        initialOrder.forEach(stepName => {
+            const li = allSteps.find(el => el.dataset.step === stepName);
+            if (li) {
+                li.classList.remove('step-correct', 'step-wrong', 'dragging');
+                stepsList.appendChild(li);
+            }
+        });
+
+        feedback.textContent = "Remets les étapes dans l’ordre : de l’extraction jusqu’à la fin de vie / recyclage.";
+        feedback.className = "feedback";
+        nextBtn.style.display = "none";
+    });
+
+    // Bouton suivant → Salle 5
+    nextBtn.addEventListener('click', () => {
+        // Salle 4 est dans /salles/, salle5.html est dans le même dossier
+        window.location.href = "salle5.html";
+    });
+</script>
+
 </body>
 </html>

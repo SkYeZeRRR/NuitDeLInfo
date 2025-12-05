@@ -12,6 +12,10 @@
 </head>
 <body>
 <div class="game-wrapper">
+
+    <!-- BOUTON RETOUR -->
+    <a href="../map.html" class="back-btn">← Retour à la map</a>
+
     <div class="header">
         <h1>Salle 2 — Passer de Windows à Linux</h1>
         <h2>Mini-jeu : “Choisis ton OS idéal” 🧪</h2>
@@ -19,8 +23,10 @@
     </div>
 
     <div class="layout">
+
         <!-- OS Cards -->
         <div class="os-cards">
+
             <!-- Windows -->
             <div class="os-card">
                 <div class="os-tag">Windows</div>
@@ -30,11 +36,7 @@
                     <li>Beaucoup de logiciels propriétaires</li>
                     <li>Très utilisé pour les jeux vidéo</li>
                 </ul>
-                <div id="windows-drop"
-                     class="drop-zone empty"
-                     data-os="windows"
-                     data-label="Caractéristiques de Windows ici">
-                </div>
+                <div id="windows-drop" class="drop-zone empty" data-os="windows" data-label="Caractéristiques de Windows ici"></div>
             </div>
 
             <!-- macOS -->
@@ -46,11 +48,7 @@
                     <li>Écosystème Apple très intégré</li>
                     <li>Matériel premium et coûteux</li>
                 </ul>
-                <div id="mac-drop"
-                     class="drop-zone empty"
-                     data-os="mac"
-                     data-label="Caractéristiques de macOS ici">
-                </div>
+                <div id="mac-drop" class="drop-zone empty" data-os="mac" data-label="Caractéristiques de macOS ici"></div>
             </div>
 
             <!-- Linux -->
@@ -61,11 +59,7 @@
                 <ul>
                     <li>Idéal pour la sobriété numérique</li>
                 </ul>
-                <div id="linux-drop"
-                     class="drop-zone empty"
-                     data-os="linux"
-                     data-label="Caractéristiques de Linux ici">
-                </div>
+                <div id="linux-drop" class="drop-zone empty" data-os="linux" data-label="Caractéristiques de Linux ici"></div>
             </div>
         </div>
 
@@ -73,54 +67,31 @@
         <aside class="side-panel">
             <h4>Caractéristiques à placer 🧩</h4>
             <p style="font-size:0.6rem; line-height:1.4;">
-                Glisse chaque jeton dans l’OS qui lui correspond.  
-                Tu peux corriger autant que tu veux avant de cliquer sur <strong>Vérifier</strong>.
+                Glisse chaque jeton dans l’OS qui lui correspond.<br>
+                Tu peux corriger autant que tu veux avant Vérifier.
             </p>
+
             <div id="token-pool" class="token-pool">
+
                 <!-- Linux -->
-                <div class="token" draggable="true" data-target="linux">
-                    Gratuit ou très faible coût de licence
-                </div>
-                <div class="token" draggable="true" data-target="linux">
-                    Logiciel libre & code source ouvert
-                </div>
-                <div class="token" draggable="true" data-target="linux">
-                    Fonctionne bien sur du vieux matériel
-                </div>
-                <div class="token" draggable="true" data-target="linux">
-                    Très personnalisable selon les besoins
-                </div>
-                <div class="token" draggable="true" data-target="linux">
-                    Respect fort de la vie privée
-                </div>
+                <div class="token" draggable="true" data-target="linux">Gratuit ou faible coût</div>
+                <div class="token" draggable="true" data-target="linux">Libre & open-source</div>
+                <div class="token" draggable="true" data-target="linux">Fonctionne sur vieux matériel</div>
+                <div class="token" draggable="true" data-target="linux">Très personnalisable</div>
+                <div class="token" draggable="true" data-target="linux">Respect de la vie privée</div>
 
                 <!-- Windows -->
-                <div class="token" draggable="true" data-target="windows">
-                    Licence propriétaire payante
-                </div>
-                <div class="token" draggable="true" data-target="windows">
-                    Très utilisé pour les jeux vidéo commerciaux
-                </div>
-                <div class="token" draggable="true" data-target="windows">
-                    Souvent présent par défaut sur les PC achetés
-                </div>
-                <div class="token" draggable="true" data-target="windows">
-                    Mises à jour parfois imposées et lourdes
-                </div>
+                <div class="token" draggable="true" data-target="windows">Licence propriétaire payante</div>
+                <div class="token" draggable="true" data-target="windows">Très utilisé pour les jeux vidéo</div>
+                <div class="token" draggable="true" data-target="windows">Souvent installé par défaut</div>
+                <div class="token" draggable="true" data-target="windows">Mises à jour imposées</div>
 
                 <!-- macOS -->
-                <div class="token" draggable="true" data-target="mac">
-                    Réservé au matériel Apple
-                </div>
-                <div class="token" draggable="true" data-target="mac">
-                    Écosystème très intégré matériel + logiciel
-                </div>
-                <div class="token" draggable="true" data-target="mac">
-                    Image premium et orientée créatifs
-                </div>
-                <div class="token" draggable="true" data-target="mac">
-                    Matériel souvent plus cher que la moyenne
-                </div>
+                <div class="token" draggable="true" data-target="mac">Réservé au matériel Apple</div>
+                <div class="token" draggable="true" data-target="mac">Écosystème Apple intégré</div>
+                <div class="token" draggable="true" data-target="mac">Image premium</div>
+                <div class="token" draggable="true" data-target="mac">Matériel plus cher</div>
+
             </div>
         </aside>
     </div>
@@ -128,9 +99,13 @@
     <div class="controls">
         <button id="check-btn" class="btn-primary">✔ Vérifier</button>
         <button id="reset-btn" class="btn-secondary">🔁 Reset</button>
-        <div id="feedback" class="feedback">
-            Place les caractéristiques puis clique sur “Vérifier”.
-        </div>
+
+        <!-- BOUTON SUIVANT (caché au début) -->
+        <button id="next-btn" class="btn-next" style="display:none;">
+            Suivant → Salle 3
+        </button>
+
+        <div id="feedback" class="feedback">Place les caractéristiques puis clique sur Vérifier.</div>
     </div>
 </div>
 
@@ -140,53 +115,42 @@
     const tokenPool = document.getElementById('token-pool');
     const checkBtn = document.getElementById('check-btn');
     const resetBtn = document.getElementById('reset-btn');
+    const nextBtn = document.getElementById('next-btn');
     const feedback = document.getElementById('feedback');
 
     let draggedToken = null;
 
-    // Drag & drop de base
+    // Drag & Drop
     tokens.forEach(token => {
-        token.addEventListener('dragstart', () => {
-            draggedToken = token;
-        });
-        token.addEventListener('dragend', () => {
-            draggedToken = null;
-        });
+        token.addEventListener('dragstart', () => draggedToken = token);
+        token.addEventListener('dragend', () => draggedToken = null);
     });
 
-    function makeDroppable(area) {
-        area.addEventListener('dragover', (e) => {
-            e.preventDefault();
-        });
-
-        area.addEventListener('drop', () => {
+    function makeDroppable(zone) {
+        zone.addEventListener('dragover', e => e.preventDefault());
+        zone.addEventListener('drop', () => {
             if (!draggedToken) return;
-            area.appendChild(draggedToken);
+            zone.appendChild(draggedToken);
             updateEmptyStates();
             clearHighlights();
         });
     }
 
-    dropZones.forEach(zone => makeDroppable(zone));
+    dropZones.forEach(makeDroppable);
     makeDroppable(tokenPool);
 
     function updateEmptyStates() {
         dropZones.forEach(zone => {
-            const hasToken = zone.querySelector('.token') !== null;
-            zone.classList.toggle('empty', !hasToken);
+            zone.classList.toggle('empty', zone.querySelector('.token') === null);
         });
     }
 
     function clearHighlights() {
-        tokens.forEach(t => {
-            t.classList.remove('correct-highlight', 'wrong-highlight');
-        });
-        dropZones.forEach(z => {
-            z.classList.remove('valid', 'invalid');
-        });
+        tokens.forEach(t => t.classList.remove('correct-highlight', 'wrong-highlight'));
+        dropZones.forEach(z => z.classList.remove('valid', 'invalid'));
     }
 
-    // Vérification globale
+    // Vérification
     checkBtn.addEventListener('click', () => {
         clearHighlights();
 
@@ -196,11 +160,9 @@
 
         tokens.forEach(token => {
             const target = token.dataset.target;
-            const parent = token.parentElement;
-
-            if (parent.classList.contains('drop-zone')) {
-                const zoneOs = parent.dataset.os;
-                if (zoneOs === target) {
+            const zone = token.parentElement;
+            if (zone.classList.contains('drop-zone')) {
+                if (zone.dataset.os === target) {
                     correct++;
                     token.classList.add('correct-highlight');
                 } else {
@@ -214,18 +176,20 @@
         const unplaced = total - placed;
 
         if (correct === total && wrong === 0) {
-            feedback.textContent =
-                "Parfait ! Tu as placé toutes les caractéristiques dans le bon OS. 🐧🎉";
+            feedback.textContent = "Parfait ! Salle validée 🎉🐧";
             feedback.className = "feedback success";
+
             dropZones.forEach(z => z.classList.add('valid'));
+
+            // AFFICHER LE BOUTON SUIVANT
+            nextBtn.style.display = "inline-block";
+
         } else {
             feedback.textContent =
-                `Résultat : ${correct}/${total} bien placées, ` +
-                `${wrong} au mauvais endroit, ${unplaced} encore dans la zone de départ.`;
+                `${correct}/${total} corrects – ${wrong} erreurs – ${unplaced} non placés.`;
             feedback.className = "feedback error";
-            if (wrong > 0) {
-                dropZones.forEach(z => z.classList.add('invalid'));
-            }
+
+            if (wrong > 0) dropZones.forEach(z => z.classList.add('invalid'));
         }
     });
 
@@ -234,8 +198,14 @@
         tokens.forEach(token => tokenPool.appendChild(token));
         updateEmptyStates();
         clearHighlights();
-        feedback.textContent = "Place les caractéristiques puis clique sur “Vérifier”.";
+        nextBtn.style.display = "none"; // cacher le bouton suivant
+        feedback.textContent = "Place les caractéristiques puis clique sur Vérifier.";
         feedback.className = "feedback";
+    });
+
+    // Redirection vers salle 3
+    nextBtn.addEventListener('click', () => {
+        window.location.href = "../salles/salle3.html";
     });
 
     updateEmptyStates();
