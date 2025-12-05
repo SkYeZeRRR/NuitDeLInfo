@@ -1,11 +1,877 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Snake — Nuit de l'Info (Cyber Snake 3D V3)</title>
+  <style>
+    :root{
+      --bg1:#0b0f1a; --bg2:#07102a; --neon1:#00f6ff; --neon2:#ff4dff; --accent:#ffd166;
+      --glass: rgba(255,255,255,0.04);
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    html,body{height:100%;margin:0;background:#050810;color:#e6f7ff;overflow:hidden}
+    .wrap{height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;overflow:hidden;position:relative;z-index:1}
+    .card{width:100%;max-width:1100px;border-radius:18px;padding:22px;background:rgba(15, 20, 35, 0.85);box-shadow:0 8px 40px rgba(0,0,0,0.6);backdrop-filter: blur(8px);position:relative;overflow:hidden;touch-action:none;z-index:2; border: 1px solid rgba(255,255,255,0.1);}
+    header{display:flex;align-items:center;gap:16px}
+    .logo{width:72px;height:72px;border-radius:14px;background:linear-gradient(135deg,#ff0000,#ffcc00);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;box-shadow:4px 4px 0 #222;cursor:pointer;font-size:32px;border:4px solid #222;text-shadow:3px 3px 0 #000}
+    h1{margin:0;font-size:20px;letter-spacing:0.6px;color:#fff; text-shadow: 2px 2px 0 #000;}
+    p.lead{margin:2px 0 12px;color:#ccc; text-shadow: 1px 1px 0 #000;}
+    .panel{background:rgba(255,255,255,0.1);border-radius:12px;padding:12px;border:3px solid #222;box-shadow:4px 4px 0 #222}
+    #gameArea{background:rgba(255,255,255,0.9);border-radius:10px;padding:12px;display:flex;flex-direction:column;align-items:center;border:4px solid #222;box-shadow:6px 6px 0 #222}
+    canvas#bgCanvas{position:fixed;left:0;top:0;width:100%;height:100%;z-index:0;pointer-events:none; image-rendering: pixelated;}
+    #gameCanvas{background:#0a0e18;border-radius:8px;display:block;image-rendering:pixelated;image-rendering:crisp-edges;border:4px solid #222;box-shadow:4px 4px 0 #222}
+    #gameMessage{position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);background:#fff;padding:24px 40px;border-radius:16px;border:4px solid #222;box-shadow:6px 6px 0 #222;color:#222;font-size:24px;font-weight:700;text-align:center;display:none;z-index:100}
+    #gameMessage.show{display:block;animation:popIn 0.3s ease-out}
+    @keyframes popIn{from{transform:translate(-50%, -50%) scale(0.8);opacity:0}to{transform:translate(-50%, -50%) scale(1);opacity:1}}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;justify-content:center}
+    button{background:#fff;border:3px solid #222;padding:8px 12px;border-radius:6px;color:#222;cursor:pointer;transition:all 0.3s;font-weight:700;box-shadow:4px 4px 0 #222}
+    button:hover{transform:translate(2px, 2px);box-shadow:2px 2px 0 #222}
+    button:active{transform:translate(4px, 4px);box-shadow:0 0 0 #222}
+    .hint{font-size:13px;color:#333;text-align:center;font-weight:600}
+    .scoreRow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .badge{padding:6px 10px;border-radius:8px;background:#fff;border:3px solid #222;font-weight:700;color:#222;box-shadow:3px 3px 0 #222}
+    @media(max-width:980px){.card{padding:12px}}
+  </style>
 </head>
 <body>
-    <p>hello</p>
+  <canvas id="bgCanvas"></canvas>
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <div class="logo" id="logo">S</div>
+        <div>
+          <h1>Snake — Nuit de l'Info — Défi Rétro</h1>
+          <p class="lead">Un snake néon sur fond pixel art old-school. Active le mode secret pour animer le ciel !</p>
+          <div class="scoreRow">
+            <div class="badge">Score: <span id="score">0</span></div>
+            <div class="badge">Highscore: <span id="highscore">0</span></div>
+            <div class="hint" style="color:#eee; text-shadow: 1px 1px 0 #000;">Contrôles: flèches / WASD / ZQSD / tactile</div>
+          </div>
+        </div>
+      </header>
+
+      <div style="margin-top:14px">
+        <div class="panel">
+          <div id="gameArea">
+            <canvas id="gameCanvas" width="640" height="480"></canvas>
+            <div id="gameMessage"></div>
+            <div class="controls">
+              <button id="startBtn">Démarrer</button>
+              <button id="pauseBtn">Pause</button>
+              <button id="resetBtn">Réinitialiser</button>
+            </div>
+            <div style="margin-top:8px" class="hint">Astuce secrète: tape "NUITINFO" sur ton clavier ou maintiens le logo 3s.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ---- Background Pixel Art & Animation ----
+const bgCanvas = document.getElementById('bgCanvas');
+const bgCtx = bgCanvas.getContext('2d');
+bgCtx.imageSmoothingEnabled = false;
+
+let staticBgSurface = null;
+let cloudPatternCanvas = null;
+const pixelSize = 30;
+let cloudScrollX = 0;
+let cloudPatternWidth = 0;
+
+const palette = {
+    sky: '#5c94fc', cloud: '#ffffff', cloudShade: '#d0e4f7',
+    ground: '#80d010', groundDark: '#005000', dirt: '#6a4318'
+};
+
+function drawStaticGroundAndSky() {
+    const offCanvas = document.createElement('canvas');
+    offCanvas.width = bgCanvas.width;
+    offCanvas.height = bgCanvas.height;
+    const offCtx = offCanvas.getContext('2d');
+    offCtx.imageSmoothingEnabled = false;
+
+    const cols = Math.ceil(offCanvas.width / pixelSize) + 2;
+    const rows = Math.ceil(offCanvas.height / pixelSize) + 1;
+    const horizonRow = Math.floor(rows * 0.65);
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            let color = palette.sky;
+            if (r === horizonRow) color = palette.groundDark;
+            else if (r > horizonRow) {
+                color = (r === horizonRow + 1 || r === horizonRow + 2) ? palette.ground : palette.dirt;
+                if (color === palette.dirt && Math.random() > 0.8) color = '#5a3308';
+            }
+            offCtx.fillStyle = color;
+            offCtx.fillRect(c * pixelSize, r * pixelSize, pixelSize, pixelSize);
+        }
+    }
+    staticBgSurface = offCanvas;
+}
+
+function generateCloudPattern() {
+    const baseCols = Math.ceil(bgCanvas.width / pixelSize);
+    const patternCols = baseCols + 6;
+    cloudPatternWidth = patternCols * pixelSize;
+
+    const patternCanvas = document.createElement('canvas');
+    patternCanvas.width = cloudPatternWidth;
+    patternCanvas.height = bgCanvas.height;
+    const patternCtx = patternCanvas.getContext('2d');
+    patternCtx.imageSmoothingEnabled = false;
+
+    const rows = Math.ceil(bgCanvas.height / pixelSize);
+    const horizonRow = Math.floor(rows * 0.65);
+
+    for (let r = 0; r < horizonRow - 3; r++) {
+        for (let c = 0; c < patternCols; c++) {
+             const seed = c * 0.1 + r * 0.05;
+             const noise = Math.sin(seed * Math.PI) * Math.sin(c * 0.5) * 0.5 + 0.5;
+
+             if(noise > 0.88) {
+                 patternCtx.fillStyle = palette.cloud;
+                 patternCtx.fillRect(c * pixelSize, r * pixelSize, pixelSize, pixelSize);
+             } else if(noise > 0.84) {
+                 patternCtx.fillStyle = palette.cloudShade;
+                 patternCtx.fillRect(c * pixelSize, r * pixelSize, pixelSize, pixelSize);
+             }
+        }
+    }
+    cloudPatternCanvas = patternCanvas;
+}
+
+
+function resizeBg(){
+    bgCanvas.width = innerWidth;
+    bgCanvas.height = innerHeight;
+    drawStaticGroundAndSky();
+    generateCloudPattern();
+}
+addEventListener('resize', resizeBg);
+resizeBg();
+
+let particles = [];
+function resetParticles(){particles=[]; for(let i=0;i<90;i++){particles.push({x:Math.random()*bgCanvas.width,y:Math.random()*bgCanvas.height,vx:(Math.random()-0.5)*0.5,vy:(Math.random()-0.5)*0.5,r:1+Math.random()*2,phase:Math.random()*Math.PI*2})}}
+resetParticles();
+
+function drawBg(t){
+  if(staticBgSurface) {
+      bgCtx.drawImage(staticBgSurface, 0, 0);
+  }
+
+  if(secretMode && cloudPatternCanvas) {
+      cloudScrollX -= 0.5;
+      if(cloudScrollX < -cloudPatternWidth) {
+          cloudScrollX = 0;
+      }
+      bgCtx.drawImage(cloudPatternCanvas, cloudScrollX, 0);
+      bgCtx.drawImage(cloudPatternCanvas, cloudScrollX + cloudPatternWidth, 0);
+  } else {
+      if(cloudPatternCanvas) {
+          bgCtx.drawImage(cloudPatternCanvas, 0, 0);
+      }
+  }
+
+  for(let p of particles){
+    p.x += p.vx; p.y += p.vy; p.phase += 0.01;
+    if(p.x<0)p.x=bgCanvas.width; if(p.x>bgCanvas.width)p.x=0;
+    if(p.y<0)p.y=bgCanvas.height; if(p.y>bgCanvas.height)p.y=0;
+    bgCtx.beginPath();
+    bgCtx.globalAlpha = 0.6 + 0.4*Math.sin(p.phase);
+    bgCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    bgCtx.fillStyle = 'rgba(100,240,255,0.8)';
+    bgCtx.fill();
+  }
+  bgCtx.globalAlpha=1;
+  requestAnimationFrame(drawBg);
+}
+requestAnimationFrame(drawBg);
+
+// ---- Game core ----
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const startBtn = document.getElementById('startBtn');
+const pauseBtn = document.getElementById('pauseBtn');
+const resetBtn = document.getElementById('resetBtn');
+const scoreEl = document.getElementById('score');
+const highEl = document.getElementById('highscore');
+const gameMessage = document.getElementById('gameMessage');
+let gridSize = 20;
+let cols = Math.floor(canvas.width / gridSize);
+let rows = Math.floor(canvas.height / gridSize);
+let snake, dir, nextDir, food, powerUps, obstacles, teleporters;
+let running=false, paused=false, score=0, high=0, speed=8, tickInterval=null, secretMode=false;
+
+function resetGame(){
+  cols = Math.floor(canvas.width / gridSize);
+  rows = Math.floor(canvas.height / gridSize);
+  snake = [{x:Math.floor(cols/2),y:Math.floor(rows/2)}];
+  dir={x:1,y:0};
+  nextDir={x:1,y:0};
+  powerUps=[];
+  obstacles=[];
+  teleporters=[];
+  score=0;
+  speed=8;
+  placeObstacles();
+  spawnFood();
+  updateScore();
+}
+
+function placeObstacles(){
+  obstacles=[];
+  for(let i=0;i<Math.floor((cols*rows)/140);i++){
+    let validPos = false;
+    let attempts = 0;
+    while(!validPos && attempts < 50) {
+      let newOb = {x:rand(2,cols-3),y:rand(2,rows-3)};
+      let onSnake = snake.some(s => s.x === newOb.x && s.y === newOb.y);
+      if(!onSnake) {
+        obstacles.push(newOb);
+        validPos = true;
+      }
+      attempts++;
+    }
+  }
+  teleporters=[];
+  for(let i=0;i<2;i++){
+    teleporters.push({
+      a:{x:rand(2,cols-3),y:rand(2,rows-3)},
+      b:{x:rand(2,cols-3),y:rand(2,rows-3)}
+    })
+  }
+}
+
+function spawnFood(){
+  let maxAttempts = 100;
+  let attempts = 0;
+  let validPosition = false;
+
+  while(!validPosition && attempts < maxAttempts) {
+    food = {x:rand(2,cols-3), y:rand(2,rows-3), type:'normal'};
+    let onObstacle = obstacles.some(ob => ob.x === food.x && ob.y === food.y);
+    let onTeleporter = teleporters.some(t =>
+      (t.a.x === food.x && t.a.y === food.y) ||
+      (t.b.x === food.x && t.b.y === food.y)
+    );
+    let onSnake = snake.some(s => s.x === food.x && s.y === food.y);
+
+    if(!onObstacle && !onTeleporter && !onSnake) {
+      validPosition = true;
+    }
+    attempts++;
+  }
+  if(Math.random()<0.07) food.type='gold';
+}
+
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+
+function updateScore(){
+  scoreEl.textContent = score;
+  high = Math.max(high, score);
+  highEl.textContent = high;
+  try{localStorage.setItem('snake_high', high)}catch(e){}
+}
+
+// --- DESSIN DU SERPENT CYBER 3D AMÉLIORÉ (inchangé) ---
+const depth = 8; // Épaisseur/profondeur augmentée
+
+function drawSnakeHead(x, y, size) {
+  const helmetTop = 'hsl(200deg 100% 60%)'; // Bleu Cyan Vif (Dessus)
+  const helmetSide = 'hsl(210deg 100% 30%)'; // Bleu Cyan Sombre (Côté)
+  const visorColor = '#ff4dff'; // Rose Magenta
+  const darkEdge = '#000000'; // Bord noir pour le contraste
+
+  ctx.save();
+  ctx.shadowColor = helmetTop;
+  ctx.shadowBlur = 12;
+
+  // 1. Dessiner la FACE DROITE (Ombre 3D)
+  ctx.fillStyle = helmetSide;
+  ctx.fillRect(x*size + size - depth, y*size + depth, depth, size - depth);
+  // Contour Droit
+  ctx.fillStyle = darkEdge;
+  ctx.fillRect(x*size + size - depth - 1, y*size + depth, 1, size - depth);
+  ctx.fillRect(x*size + size - depth, y*size + size - 1, depth, 1);
+  
+  // 2. Dessiner la FACE BAS (Ombre 3D)
+  ctx.fillStyle = helmetSide;
+  ctx.fillRect(x*size + depth, y*size + size - depth, size - depth, depth);
+  // Contour Bas
+  ctx.fillStyle = darkEdge;
+  ctx.fillRect(x*size + depth, y*size + size - depth - 1, size - depth, 1);
+  ctx.fillRect(x*size + size - 1, y*size + size - depth, 1, depth);
+
+
+  // 3. Dessiner la FACE SUPÉRIEURE (Couleur Principale)
+  // Ombre portée sous le bloc 3D (pour le détacher du sol)
+  ctx.shadowColor = 'rgba(0,0,0,0.5)';
+  ctx.shadowBlur = 4;
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.fillRect(x*size + 3, y*size + 3, size - depth - 2, size - depth - 2);
+
+  ctx.shadowBlur = 0; // Réinitialiser le shadow avant de dessiner la face
+  ctx.fillStyle = helmetTop;
+  ctx.fillRect(x*size+1, y*size+1, size-depth, size-depth);
+  
+  // Contour Supérieur
+  ctx.fillStyle = darkEdge;
+  ctx.fillRect(x*size, y*size, size-depth, 1);
+  ctx.fillRect(x*size, y*size, 1, size-depth);
+  
+  // Reflet (haut/gauche)
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.fillRect(x*size+1, y*size+1, size-depth-2, 2);
+  ctx.fillRect(x*size+1, y*size+1, 2, size-depth-2);
+  
+  // Visor (Visière) - Bande Néon sur la face supérieure
+  ctx.shadowColor = visorColor;
+  ctx.shadowBlur = 10;
+  ctx.fillStyle = visorColor;
+
+  let visorH = Math.max(2, Math.floor(size/5));
+  let visorY = y*size + size/2 - visorH/2 + 1;
+
+  if(dir.x === 1) { // Droite
+      ctx.fillRect(x*size + size/2, visorY, size/2 - depth, visorH);
+  } else if(dir.x === -1) { // Gauche
+      ctx.fillRect(x*size + 1, visorY, size/2, visorH);
+  } else if(dir.y === -1) { // Haut
+      ctx.fillRect(x*size + 1, y*size + 1, size - depth - 1, visorH);
+  } else if(dir.y === 1) { // Bas
+      ctx.fillRect(x*size + 1, y*size + size - depth - visorH, size - depth - 1, visorH);
+  }
+  
+  // "Bouche" du serpent (langue énergétique)
+  ctx.shadowColor = '#ff0055';
+  ctx.shadowBlur = 8;
+  ctx.fillStyle = '#ff0055';
+  let tongueSize = Math.max(3, Math.floor(size/5));
+  if(dir.x === 1) {
+    ctx.fillRect(x*size + size - depth, y*size + size/2 - tongueSize/2, depth, tongueSize);
+  } else if(dir.x === -1) {
+    ctx.fillRect(x*size + 1 - tongueSize, y*size + size/2 - tongueSize/2, tongueSize, tongueSize);
+  } else if(dir.y === -1) {
+    ctx.fillRect(x*size + size/2 - tongueSize/2, y*size + 1 - tongueSize, tongueSize, tongueSize);
+  } else if(dir.y === 1) {
+    ctx.fillRect(x*size + size/2 - tongueSize/2, y*size + size - depth - 1, tongueSize, depth);
+  }
+
+  ctx.restore();
+}
+
+function drawSnakeBody(x, y, size, isLast) {
+  const armorTop = 'hsl(280deg 100% 50%)'; // Violet Principal (Dessus)
+  const armorSide = 'hsl(250deg 100% 20%)'; // Violet Sombre (Côté)
+  const neonAccent = '#ff4dff'; // Accent rose/magenta
+  const darkEdge = '#000000'; // Bord noir pour le contraste
+
+  ctx.save();
+  ctx.shadowColor = neonAccent;
+  ctx.shadowBlur = 8;
+  
+  // 1. Dessiner la FACE DROITE (Ombre 3D)
+  ctx.fillStyle = armorSide;
+  ctx.fillRect(x*size + size - depth, y*size + depth, depth, size - depth);
+  // Contour Droit
+  ctx.fillStyle = darkEdge;
+  ctx.fillRect(x*size + size - depth - 1, y*size + depth, 1, size - depth);
+  ctx.fillRect(x*size + size - depth, y*size + size - 1, depth, 1);
+  
+  // 2. Dessiner la FACE BAS (Ombre 3D)
+  ctx.fillStyle = armorSide;
+  ctx.fillRect(x*size + depth, y*size + size - depth, size - depth, depth);
+  // Contour Bas
+  ctx.fillStyle = darkEdge;
+  ctx.fillRect(x*size + depth, y*size + size - depth - 1, size - depth, 1);
+  ctx.fillRect(x*size + size - 1, y*size + size - depth, 1, depth);
+
+
+  // 3. Dessiner la FACE SUPÉRIEURE (Couleur Principale)
+  // Ombre portée sous le bloc 3D (pour le détacher du sol)
+  ctx.shadowColor = 'rgba(0,0,0,0.5)';
+  ctx.shadowBlur = 4;
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.fillRect(x*size + 3, y*size + 3, size - depth - 2, size - depth - 2);
+
+  ctx.shadowBlur = 0; // Réinitialiser le shadow avant de dessiner la face
+  ctx.fillStyle = armorTop;
+  ctx.fillRect(x*size+1, y*size+1, size-depth, size-depth);
+  
+  // Contour Supérieur
+  ctx.fillStyle = darkEdge;
+  ctx.fillRect(x*size, y*size, size-depth, 1);
+  ctx.fillRect(x*size, y*size, 1, size-depth);
+  
+  // Reflet (haut/gauche)
+  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.fillRect(x*size+1, y*size+1, size-depth, 2);
+  ctx.fillRect(x*size+1, y*size+1, 2, size-depth);
+
+  // Détails mécaniques sur la face supérieure
+  ctx.fillStyle = 'rgba(0,0,0,0.7)';
+  let separatorSize = Math.max(2, Math.floor(size/8));
+  ctx.fillRect(x*size + size/2 - separatorSize/2, y*size + 3, separatorSize, size-depth - 4);
+  
+  // Accent Néon
+  ctx.shadowBlur = 4;
+  ctx.shadowColor = neonAccent;
+  ctx.fillStyle = neonAccent;
+  let accentSize = Math.max(2, Math.floor(size/6));
+  ctx.fillRect(x*size + 3, y*size + 3, accentSize, accentSize);
+  ctx.fillRect(x*size + size - depth - accentSize - 1, y*size + size - depth - accentSize - 1, accentSize, accentSize);
+
+  if(isLast) {
+    // Queue (Aspect propulseur ou pointe) sur la face supérieure
+    let tailSize = Math.floor(size/2);
+    ctx.fillStyle = armorSide;
+    ctx.fillRect(x*size + size/2 - tailSize/2, y*size + size/2 - tailSize/2, tailSize - 1, tailSize - 1);
+    
+    ctx.shadowColor = neonAccent;
+    ctx.shadowBlur = 6;
+    ctx.fillStyle = '#ff77ff'; // Effet de propulsion
+    ctx.fillRect(x*size + size/2 - 1, y*size + size/2 - 1, 2, 2);
+  }
+  ctx.restore();
+}
+
+// --- FIN DESSIN DU SERPENT CYBER 3D AMÉLIORÉ ---
+
+function drawCell(x,y,size,fill,glow){
+  ctx.save();
+  if(glow){ctx.shadowColor = glow; ctx.shadowBlur = 8}
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.fillRect(x*size+3, y*size+3, size-2, size-2);
+  ctx.fillStyle = fill;
+  ctx.fillRect(x*size+1, y*size+1, size-2, size-2);
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.fillRect(x*size+1, y*size+1, size-2, 2);
+  ctx.fillRect(x*size+1, y*size+1, 2, size-2);
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.fillRect(x*size+1, y*size+size-3, size-2, 2);
+  ctx.fillRect(x*size+size-3, y*size+1, 2, size-2);
+  ctx.restore();
+}
+
+function drawApple(x, y, size, type) {
+    ctx.save();
+    
+    // Définition des couleurs
+    let color, glowColor, stemColor, reflectionColor, darkColor;
+    if (type === 'gold') {
+        color = 'hsl(45, 100%, 55%)'; // Jaune doré
+        darkColor = 'hsl(45, 100%, 35%)';
+        glowColor = 'hsl(45, 100%, 75%)';
+        stemColor = '#5c3317'; // Marron
+        reflectionColor = 'rgba(255, 255, 255, 0.8)';
+    } else {
+        color = 'hsl(0, 100%, 50%)'; // Rouge vif
+        darkColor = 'hsl(350, 100%, 30%)';
+        glowColor = 'hsl(0, 100%, 65%)';
+        stemColor = '#228B22'; // Vert foncé
+        reflectionColor = 'rgba(255, 255, 255, 0.4)';
+    }
+
+    const centerX = x * size + size / 2;
+    const centerY = y * size + size / 2;
+    const radius = size * 0.45;
+
+    // Ombre sous la pomme (pour l'effet 3D)
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+    ctx.shadowBlur = 4;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    ctx.beginPath();
+    ctx.ellipse(centerX + 2, centerY + 3, radius * 1.2, radius * 0.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+
+    // Corps de la Pomme (Cercle avec dégradé)
+    const gradient = ctx.createRadialGradient(centerX - radius/3, centerY - radius/3, 0, centerX, centerY, radius * 1.3);
+    gradient.addColorStop(0, glowColor);
+    gradient.addColorStop(0.5, color);
+    gradient.addColorStop(1, darkColor);
+
+    ctx.shadowColor = glowColor;
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Reflet (pour l'effet de brillance)
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = reflectionColor;
+    ctx.beginPath();
+    ctx.arc(centerX - radius / 3, centerY - radius / 3, radius / 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Tige de la pomme (Stem)
+    const stemLength = Math.max(2, Math.floor(size / 6));
+    const stemWidth = Math.max(1, Math.floor(size / 10));
+    ctx.fillStyle = stemColor;
+    ctx.fillRect(centerX - stemWidth / 2, centerY - radius - 1, stemWidth, stemLength);
+
+    ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = '#0a0e18';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  for(let i=0;i<cols;i++) {
+    for(let j=0;j<rows;j++){
+      if((i+j)%2===0) {
+        ctx.fillStyle = 'rgba(0,246,255,0.03)';
+      } else {
+        ctx.fillStyle = 'rgba(255,77,255,0.02)';
+      }
+      ctx.fillRect(i*gridSize, j*gridSize, gridSize, gridSize);
+    }
+  }
+  ctx.strokeStyle = 'rgba(0,246,255,0.08)';
+  ctx.lineWidth = 1;
+  for(let i=0; i<=cols; i++) {
+    ctx.beginPath();
+    ctx.moveTo(i*gridSize, 0);
+    ctx.lineTo(i*gridSize, canvas.height);
+    ctx.stroke();
+  }
+  for(let j=0; j<=rows; j++) {
+    ctx.beginPath();
+    ctx.moveTo(0, j*gridSize);
+    ctx.lineTo(canvas.width, j*gridSize);
+    ctx.stroke();
+  }
+  for(let y=0; y<canvas.height; y+=2) {
+    ctx.fillStyle = 'rgba(0,0,0,0.05)';
+    ctx.fillRect(0, y, canvas.width, 1);
+  }
+  ctx.strokeStyle = 'rgba(0,246,255,0.3)';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = 'rgba(255,77,255,0.2)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(2, 2, canvas.width-4, canvas.height-4);
+
+  for(let ob of obstacles){
+    ctx.save();
+    ctx.shadowColor = 'rgba(255,40,40,0.8)';
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(ob.x*gridSize+4, ob.y*gridSize+4, gridSize-2, gridSize-2);
+    ctx.fillStyle = '#ff2828';
+    ctx.fillRect(ob.x*gridSize+1, ob.y*gridSize+1, gridSize-2, gridSize-2);
+    ctx.fillStyle = '#ff5555';
+    ctx.fillRect(ob.x*gridSize+1, ob.y*gridSize+1, gridSize-2, 2);
+    ctx.fillRect(ob.x*gridSize+1, ob.y*gridSize+1, 2, gridSize-2);
+    ctx.fillStyle = '#aa0000';
+    ctx.fillRect(ob.x*gridSize+1, ob.y*gridSize+gridSize-3, gridSize-2, 2);
+    ctx.fillRect(ob.x*gridSize+gridSize-3, ob.y*gridSize+1, 2, gridSize-2);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(ob.x*gridSize + gridSize/2 - 1, ob.y*gridSize + 4, 2, gridSize-8);
+    ctx.fillRect(ob.x*gridSize + 4, ob.y*gridSize + gridSize/2 - 1, gridSize-8, 2);
+    ctx.restore();
+  }
+
+  for(let t of teleporters){
+    ctx.save();
+    ctx.shadowColor = 'rgba(100,100,255,0.9)';
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(t.a.x*gridSize+4, t.a.y*gridSize+4, gridSize-2, gridSize-2);
+    ctx.fillStyle = '#6666ff';
+    ctx.fillRect(t.a.x*gridSize+1, t.a.y*gridSize+1, gridSize-2, gridSize-2);
+    ctx.fillStyle = '#9999ff';
+    ctx.fillRect(t.a.x*gridSize+1, t.a.y*gridSize+1, gridSize-2, 2);
+    ctx.fillRect(t.a.x*gridSize+1, t.a.y*gridSize+1, 2, gridSize-2);
+    ctx.fillStyle = '#3333cc';
+    ctx.fillRect(t.a.x*gridSize+1, t.a.y*gridSize+gridSize-3, gridSize-2, 2);
+    ctx.fillRect(t.a.x*gridSize+gridSize-3, t.a.y*gridSize+1, 2, gridSize-2);
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(t.b.x*gridSize+4, t.b.y*gridSize+4, gridSize-2, gridSize-2);
+    ctx.fillStyle = '#6666ff';
+    ctx.fillRect(t.b.x*gridSize+1, t.b.y*gridSize+1, gridSize-2, gridSize-2);
+    ctx.fillStyle = '#9999ff';
+    ctx.fillRect(t.b.x*gridSize+1, t.b.y*gridSize+1, gridSize-2, 2);
+    ctx.fillRect(t.b.x*gridSize+1, t.b.y*gridSize+1, 2, gridSize-2);
+    ctx.fillStyle = '#3333cc';
+    ctx.fillRect(t.b.x*gridSize+1, t.b.y*gridSize+gridSize-3, gridSize-2, 2);
+    ctx.fillRect(t.b.x*gridSize+gridSize-3, t.b.y*gridSize+1, 2, gridSize-2);
+    ctx.fillStyle = '#fff';
+    let center = gridSize/2;
+    ctx.fillRect(t.a.x*gridSize + center - 2, t.a.y*gridSize + center - 2, 4, 4);
+    ctx.fillRect(t.b.x*gridSize + center - 2, t.b.y*gridSize + center - 2, 4, 4);
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.fillRect(t.a.x*gridSize + center - 1, t.a.y*gridSize + center, 3, 1);
+    ctx.fillRect(t.b.x*gridSize + center - 1, t.b.y*gridSize + center, 3, 1);
+    ctx.restore();
+  }
+
+  if(food){
+    drawApple(food.x, food.y, gridSize, food.type); // NOUVELLE FONCTION D'AFFICHAGE
+  }
+
+  for(let k=snake.length-1;k>=1;k--){
+    let s = snake[k];
+    drawSnakeBody(s.x, s.y, gridSize, k === snake.length-1);
+  }
+
+  if(snake[0]){
+    let h = snake[0];
+    drawSnakeHead(h.x, h.y, gridSize);
+  }
+}
+
+function step(){
+  if(paused) return;
+  dir = nextDir;
+  let head = {x:snake[0].x + dir.x, y:snake[0].y + dir.y};
+  if(head.x < 0) head.x = cols-1;
+  if(head.x >= cols) head.x = 0;
+  if(head.y < 0) head.y = rows-1;
+  if(head.y >= rows) head.y = 0;
+  if(obstacles.some(o => o.x===head.x && o.y===head.y)) {
+    endGame();
+    return;
+  }
+  for(let i=0;i<snake.length;i++){
+    if(snake[i].x===head.x && snake[i].y===head.y){
+      endGame();
+      return
+    }
+  }
+  snake.unshift(head);
+  for(let t of teleporters){
+    if(t.a.x===head.x && t.a.y===head.y){
+      head.x = t.b.x;
+      head.y = t.b.y;
+    } else if(t.b.x===head.x && t.b.y===head.y){
+      head.x = t.a.x;
+      head.y = t.a.y
+    }
+  }
+  if(food && head.x===food.x && head.y===food.y){
+    if(food.type==='gold'){
+      score += 5;
+      for(let i=0;i<2;i++) snake.push({...snake[snake.length-1]});
+    } else {
+      score += 1;
+    }
+    spawnFood();
+    updateScore();
+    if(Math.random()<0.12) spawnPower();
+  } else {
+    snake.pop();
+  }
+  if(powerUps.length){
+    for(let i=powerUps.length-1;i>=0;i--){
+      let p=powerUps[i];
+      if(p.ttl--<=0) powerUps.splice(i,1);
+      else if(p.x===head.x && p.y===food.y){
+        applyPower(p);
+        powerUps.splice(i,1);
+      }
+    }
+  }
+  if(score>0 && score%7===0) speed = 8 + Math.min(12, Math.floor(score/7));
+  draw();
+}
+
+function spawnPower(){
+  let type = Math.random()<0.5?'slow':'bomb';
+  if(Math.random()<0.12) type='freeze';
+  powerUps.push({x:rand(2,cols-3),y:rand(2,rows-3),type:type,ttl:240})
+}
+
+function applyPower(p){
+  if(p.type==='slow'){
+    speed = Math.max(5, speed-3);
+    setTimeout(()=>{ speed = 8 + Math.min(12, Math.floor(score/7)) }, 4000);
+  } else if(p.type==='bomb'){
+    endGame();
+  } else if(p.type==='freeze'){
+    paused=true;
+    setTimeout(()=>{ paused=false }, 2100);
+  }
+}
+
+function showMessage(text, duration = 2000) {
+  gameMessage.textContent = text;
+  gameMessage.classList.add('show');
+  setTimeout(() => {
+    gameMessage.classList.remove('show');
+  }, duration);
+}
+
+function endGame(){
+  running=false;
+  clearInterval(tickInterval);
+  showMessage('Game Over — Score: ' + score, 3000);
+  setTimeout(() => {
+    resetGame();
+    draw();
+  }, 500);
+}
+
+function gameLoop(){
+  step();
+  if(running){
+    clearInterval(tickInterval);
+    tickInterval = setInterval(step, 1000/Math.max(5,speed));
+  }
+}
+
+startBtn.addEventListener('click', ()=>{
+  if(!running){
+    running=true;
+    paused=false;
+    resetGame();
+    gameLoop();
+  }
+})
+
+pauseBtn.addEventListener('click', ()=>{
+  paused=!paused;
+  pauseBtn.textContent = paused? 'Reprendre' : 'Pause'
+})
+
+resetBtn.addEventListener('click', ()=>{
+  running=false;
+  clearInterval(tickInterval);
+  resetGame();
+  draw();
+  updateScore();
+})
+
+addEventListener('keydown', (e)=>{
+  const k = e.key.toLowerCase();
+  const code = e.code;
+  if(k === 'arrowup') setDir(0,-1);
+  if(k === 'arrowdown') setDir(0,1);
+  if(k === 'arrowleft') setDir(-1,0);
+  if(k === 'arrowright') setDir(1,0);
+  if(code === 'KeyW' || code === 'KeyZ') setDir(0,-1);
+  if(code === 'KeyS') setDir(0,1);
+  if(code === 'KeyA' || code === 'KeyQ') setDir(-1,0);
+  if(code === 'KeyD') setDir(1,0);
+  pushSecretKey(k);
+});
+
+function setDir(x,y){
+  if(dir.x === -x && dir.y === -y) return;
+  nextDir={x,y};
+}
+
+let touchStart=null;
+canvas.addEventListener('touchstart', (e)=>{
+  let t = e.touches[0];
+  touchStart={x:t.clientX,y:t.clientY}
+});
+
+canvas.addEventListener('touchend', (e)=>{
+  if(!touchStart) return;
+  let t = e.changedTouches[0];
+  let dx = t.clientX - touchStart.x, dy = t.clientY - touchStart.y;
+  if(Math.abs(dx)>Math.abs(dy)){
+    if(dx>10) setDir(1,0);
+    else if(dx<-10) setDir(-1,0);
+  } else {
+    if(dy>10) setDir(0,1);
+    else if(dy<-10) setDir(0,-1);
+  }
+  touchStart=null;
+});
+
+try{
+  high = parseInt(localStorage.getItem('snake_high')||'0');
+  highEl.textContent = high
+}catch(e){}
+
+let secretBuffer = '';
+const SECRET = 'nuitinfo';
+
+function pushSecretKey(k){
+  if(k.length!==1) return;
+  secretBuffer += k;
+  if(secretBuffer.length>20) secretBuffer = secretBuffer.slice(-20);
+  if(secretBuffer.endsWith(SECRET)){
+    activateSecret();
+    secretBuffer='';
+  }
+}
+
+let logo = document.getElementById('logo');
+let pressTimer=null;
+logo.addEventListener('pointerdown', ()=>{
+  pressTimer = setTimeout(()=>{ activateSecret(); }, 1200);
+});
+logo.addEventListener('pointerup', ()=>{
+  clearTimeout(pressTimer);
+});
+logo.addEventListener('pointerleave', ()=>{
+  clearTimeout(pressTimer);
+});
+
+function activateSecret(){
+  if(secretMode) return;
+  secretMode=true;
+  document.body.style.background = '#020305';
+
+  for(let i=0;i<200;i++) particles.push({
+    x:Math.random()*bgCanvas.width,
+    y:Math.random()*bgCanvas.height,
+    vx:(Math.random()-0.5)*1.4,
+    vy:(Math.random()-0.5)*1.4,
+    r:1+Math.random()*3,
+    phase:Math.random()*Math.PI*2
+  });
+
+  logo.style.boxShadow = '0 12px 60px rgba(0,246,255,0.45)';
+  logo.innerHTML = '⚡';
+
+  gridSize = 18;
+  resetGame();
+  if(running){
+    clearInterval(tickInterval);
+    tickInterval = setInterval(step, 1000/Math.max(8, speed));
+  }
+  showMessage('Mode Secret Activé: Défilement continu ! 🔄✨', 3000);
+}
+
+function fitCanvas(){
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = Math.max(320, Math.floor(rect.width));
+  canvas.height = Math.max(240, Math.floor(rect.height));
+  cols = Math.floor(canvas.width / gridSize);
+  rows = Math.floor(canvas.height / gridSize);
+}
+
+addEventListener('resize', ()=>{
+  fitCanvas();
+  draw();
+});
+
+fitCanvas();
+resetGame();
+draw();
+
+let glow=0;
+setInterval(()=>{
+  glow = (glow+0.08)%Math.PI*2;
+  startBtn.style.boxShadow = `0 6px 26px rgba(0,0,0,0.5), 0 0 ${8+6*Math.abs(Math.sin(glow))}px rgba(0,246,255,0.12)`
+}, 120);
+
+addEventListener('keydown',(e)=>{
+  if(e.shiftKey && e.key.toLowerCase()==='g'){
+    food.type='gold';
+    food.x=rand(2,cols-3);
+    food.y=rand(2,rows-3);
+  }
+});
+
+</script>
 </body>
 </html>
