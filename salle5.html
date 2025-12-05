@@ -56,6 +56,8 @@
             <div class="button-row">
                 <button id="check-btn" class="btn primary">Vérifier mes réponses</button>
                 <button id="reset-btn" class="btn ghost">Réinitialiser</button>
+                <button id="back-btn" class="btn ghost">Retour</button>
+                <button id="finish-btn" class="btn primary" style="display:none;">Terminer</button>
             </div>
             <p id="result-text" class="result-text"></p>
         </footer>
@@ -80,6 +82,8 @@
         const dropZones = document.querySelectorAll(".drop-zone, #source-zone");
         const checkBtn = document.getElementById("check-btn");
         const resetBtn = document.getElementById("reset-btn");
+        const backBtn = document.getElementById("back-btn");
+        const finishBtn = document.getElementById("finish-btn");
         const resultText = document.getElementById("result-text");
         const sourceZone = document.getElementById("source-zone");
 
@@ -152,9 +156,13 @@
             if (correct === total && total > 0) {
                 resultText.textContent = "Parfait, petit génie du libre ! 🎉 Tu as tout bien classé.";
                 resultText.className = "result-text success";
+                // Affiche le bouton Terminer quand tout est correct
+                finishBtn.style.display = "inline-block";
             } else {
                 resultText.textContent = `Score : ${correct} / ${total}. Continue, petit pingouin, tu vas y arriver !`;
                 resultText.className = "result-text warning";
+                // Cache le bouton Terminer si score incomplet
+                finishBtn.style.display = "none";
             }
         });
 
@@ -165,6 +173,18 @@
                 item.classList.remove("correct", "wrong");
             });
             clearFeedback();
+            // Cache le bouton Terminer au reset
+            finishBtn.style.display = "none";
+        });
+
+        // Retour permanent vers la map
+        backBtn.addEventListener("click", () => {
+            window.location.href = "map.html";
+        });
+
+        // Terminer (visible seulement quand tout est correct)
+        finishBtn.addEventListener("click", () => {
+            window.location.href = "map.html";
         });
 
         function clearFeedback() {
