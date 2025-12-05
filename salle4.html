@@ -1,11 +1,617 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
 <body>
-    <p>hello</p>
+    
+</body>
+</html>
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco-Quiz 🌍 : Testez Votre Impact Carbone (20 Questions)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS : DESIGN ARCADE (Palette Bleue Marine & Blanc) --- */
+        :root {
+            --primary-color: #3498db;  /* Bleu Clair (Surbrillance, Boutons) */
+            --secondary-color: #2c3e50; /* Bleu Marine (Fonds Conteneurs) */
+            --bg-color: #1a2530;       /* Fond Ambiant Bleu Nuit */
+            --card-color: var(--secondary-color); /* Fonds des conteneurs = Bleu Marine */
+            --text-color: #ffffff;     /* Texte principal = Blanc */
+            --success-color: #2ecc71;  /* Vert pour le succès */
+            --error-color: #e74c3c;    /* Rouge pour les erreurs/timer */
+        }
+
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background-color: var(--bg-color);
+            background-image: linear-gradient(135deg, var(--bg-color) 0%, #001f3f 100%);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            font-size: 10px;
+        }
+
+        .container {
+            background: var(--card-color);
+            padding: 3rem;
+            border-radius: 20px;
+            /* Contour bleu clair (surbrillance) */
+            box-shadow: 0 0 0 5px var(--primary-color), 0 20px 40px rgba(0,0,0,0.5);
+            width: 95%;
+            max-width: 700px;
+            text-align: center;
+            position: relative;
+            transition: transform 0.3s;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        h1, h2 {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        /* Ajustement des paragraphes dans l'écran de démarrage */
+        .start-info p {
+            font-size: 0.7rem;
+            color: var(--text-color);
+        }
+
+        /* Boutons VRAI/FAUX */
+        .btn-game {
+            width: 48%; /* Deux boutons côte à côte */
+            padding: 18px 0;
+            font-size: 1rem;
+            text-align: center;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .btn-game.true {
+            background-color: var(--success-color);
+            color: var(--secondary-color);
+        }
+        .btn-game.false {
+            background-color: var(--error-color);
+            color: var(--text-color);
+        }
+        .btn-game:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+
+        /* Boutons de navigation (start, rejouer) */
+        .btn {
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            border: none;
+            padding: 14px 35px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            margin: 10px 5px;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn:hover {
+            background-color: #7fbfec;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: var(--text-color);
+            color: var(--secondary-color);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Quiz Header */
+        .header-quiz {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .progress-box {
+            font-weight: 700;
+            padding: 5px 15px;
+            border-radius: 10px;
+            background: var(--bg-color);
+            color: var(--primary-color);
+            font-size: 0.6rem;
+            border: 1px solid var(--primary-color);
+        }
+
+        .question-text {
+            color: var(--text-color);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .options-game {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Vrai/Faux Feedback */
+        .btn-game.selected-correct {
+            border: 5px solid white !important;
+            box-shadow: 0 0 15px var(--success-color);
+        }
+
+        .btn-game.selected-wrong {
+            border: 5px solid white !important;
+            box-shadow: 0 0 15px var(--error-color);
+        }
+
+        /* Section Résultat */
+        .score-display {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 20px 0 10px;
+        }
+
+        .feedback {
+            font-size: 0.8rem;
+            margin: 20px 0;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid var(--primary-color);
+            background: #1a2530;
+            color: var(--text-color);
+        }
+
+        /* Modal de Correction */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--secondary-color);
+            color: var(--text-color);
+            padding: 40px;
+            border-radius: 15px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.8);
+        }
+
+        .review-item {
+            margin-bottom: 25px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            background: #1a2530;
+            border: 1px solid var(--primary-color);
+        }
+
+        .review-item h4 {
+            margin-top: 0;
+            font-size: 0.9rem;
+            color: var(--primary-color);
+        }
+
+        /* Ajustements de couleur pour la correction sur fond sombre */
+        .review-item.correct-answer {
+            background: #0d3222;
+            border-left: 5px solid var(--success-color);
+        }
+
+        .review-item.wrong-answer {
+            background: #440d0d;
+            border-left: 5px solid var(--error-color);
+        }
+
+        .explanation-box {
+            font-style: italic;
+            font-size: 0.7rem;
+            color: #ccc;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #555;
+        }
+
+        /* Media Query pour mobile */
+        @media (max-width: 600px) {
+            .container { padding: 20px; }
+            .options-game { flex-direction: column; }
+            .btn-game { width: 100%; margin-bottom: 10px; }
+        }
+
+        /* Animation (conservée de la version précédente) */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div id="start-screen" class="screen active">
+        <h1>🌍 Eco-Quiz</h1>
+        <p style="color: var(--primary-color); font-weight: 600; text-transform: uppercase;">L'Impact Carbone, de l'Extraction à la Sobriété</p>
+        <p>Affrontez 20 affirmations pour évaluer votre connaissance de l'empreinte environnementale.</p>
+        <div class="start-info" style="background: #1a2530; padding: 20px; border-radius: 10px; margin: 25px 0; text-align: left; border-left: 4px solid var(--primary-color);">
+            👉 Format : VRAI ou FAUX.<br>
+            💡 Catégories variées : Extraction, Usage, Transport, Fin de vie, etc.<br>
+            🏆 Objectif : Atteindre 20/20 et devenir un éco-champion !
+        </div>
+        <button onclick="startQuiz()" class="btn">Démarrer le Quiz</button>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+        <div class="header-quiz">
+            <div class="progress-box">
+                Question <span id="current-question-num">1</span> / 20
+            </div>
+        </div>
+
+        <div class="question-container">
+            <div class="question-text" id="question-text">
+                Chargement de la question...
+            </div>
+            <div id="options-container" class="options-game">
+                <button onclick="selectAnswer(true)" class="btn-game true">VRAI</button>
+                <button onclick="selectAnswer(false)" class="btn-game false">FAUX</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h2>🏆 Bilan Carbone !</h2>
+        <p>Votre score final sur 20 affirmations :</p>
+        <div class="score-display">
+            <span id="final-score">0</span> / 20
+        </div>
+
+        <p id="feedback-text" class="feedback"></p>
+
+        <button onclick="showReviewModal()" class="btn btn-secondary">Voir la Correction Détaillée</button>
+        <button onclick="restartQuiz()" class="btn">Rejouer</button>
+    </div>
+
+</div>
+
+<div id="review-modal" class="modal" onclick="closeReviewModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h2 style="color: var(--primary-color);">Rapport de Connaissance Écologique</h2>
+        <p>Passez en revue les réponses pour affûter vos connaissances.</p>
+        <div id="review-content">
+        </div>
+        <button onclick="closeReviewModal()" class="btn" style="margin-top: 20px;">Fermer le Rapport</button>
+    </div>
+</div>
+
+<script>
+    // --- JAVASCRIPT : LOGIQUE AVANCÉE ---
+
+    // 1. La base de données de 20 questions Vrai/Faux
+    const questions = [
+        // 1. Extraction et Fabrication
+        {
+            question: "La fabrication d'un smartphone est responsable de plus de 80% de son empreinte carbone totale.",
+            answer: true,
+            explanation: "VRAI. L'extraction des matières premières et les processus de fabrication gourmands en énergie (notamment l'électronique) sont, de loin, l'étape la plus impactante avant l'utilisation."
+        },
+        {
+            question: "Le béton, utilisé dans la construction, est le deuxième produit le plus consommé au monde après l'eau.",
+            answer: true,
+            explanation: "VRAI. La production de ciment, composant clé du béton, est responsable d'environ 8% des émissions mondiales de CO2, ce qui est colossal."
+        },
+        {
+            question: "L'aluminium est plus coûteux en énergie à recycler qu'à produire à partir de minerai brut (bauxite).",
+            answer: false,
+            explanation: "FAUX. Le recyclage de l'aluminium consomme environ 95% d'énergie en moins que sa production primaire. C'est pourquoi son recyclage est essentiel et très valorisé."
+        },
+        {
+            question: "L'élevage bovin est le secteur agricole le moins émetteur de gaz à effet de serre au kilo de produit.",
+            answer: false,
+            explanation: "FAUX. L'élevage bovin est le plus émetteur (méthane provenant de la digestion, déforestation pour les pâturages) par rapport à la volaille, aux œufs ou aux légumes."
+        },
+
+        // 2. Transport
+        {
+            question: "Un vol long-courrier est, par passager-kilomètre, plus émetteur de CO2 qu'un trajet en voiture thermique seul.",
+            answer: true,
+            explanation: "VRAI. L'avion reste, de loin, le mode de transport le plus carboné par kilomètre parcouru et par personne (si la voiture est bien remplie, elle peut être moins émettrice que l'avion, mais pas par personne seule)."
+        },
+        {
+            question: "Le transport maritime est responsable de moins de 1% des émissions mondiales de gaz à effet de serre.",
+            answer: false,
+            explanation: "FAUX. Le transport maritime représente environ 2,5% à 3% des émissions mondiales de gaz à effet de serre, soit plus que l'Allemagne ou le Japon."
+        },
+        {
+            question: "Les voitures électriques n'émettent aucun CO2 de leur cycle de vie complet, y compris la fabrication des batteries.",
+            answer: false,
+            explanation: "FAUX. Les VE ont une empreinte carbone initiale élevée (fabrication de la batterie). Elles deviennent 'plus propres' que les thermiques seulement après plusieurs dizaines de milliers de kilomètres, grâce à l'usage."
+        },
+        {
+            question: "Le fret par train est moins émetteur que le fret par camion pour les longues distances.",
+            answer: true,
+            explanation: "VRAI. Le transport ferroviaire est en moyenne 6 à 9 fois moins polluant que le transport routier par tonne-kilomètre. Il est donc fortement encouragé pour le transport de marchandises."
+        },
+
+        // 3. Usage et Consommation
+        {
+            question: "Réduire le chauffage de 1°C dans une habitation permet d'économiser environ 7% d'énergie.",
+            answer: true,
+            explanation: "VRAI. C'est une règle de base de la sobriété énergétique et un geste d'économie majeur pour réduire les émissions de la maison."
+        },
+        {
+            question: "Le streaming vidéo (Netflix, YouTube) a une empreinte carbone négligeable.",
+            answer: false,
+            explanation: "FAUX. Le réseau internet, les data centers et les terminaux consomment une énergie considérable. Une heure de streaming HD peut correspondre à plusieurs centaines de grammes de CO2, équivalant à un petit trajet en voiture."
+        },
+        {
+            question: "Les LED (ampoules à Diodes Électroluminescentes) consomment 10 fois plus d'énergie que les ampoules halogènes classiques.",
+            answer: false,
+            explanation: "FAUX. C'est l'inverse. Les LED sont 7 à 10 fois moins consommatrices d'énergie et ont une durée de vie beaucoup plus longue, réduisant ainsi leur empreinte carbone globale."
+        },
+        {
+            question: "Acheter des vêtements de seconde main n'a aucun impact environnemental positif.",
+            answer: false,
+            explanation: "FAUX. L'achat d'occasion prolonge la durée de vie du produit, évitant l'énergie et les ressources (eau, teinture, transport) nécessaires à la fabrication d'un article neuf."
+        },
+
+        // 4. Déchets et Fin de vie
+        {
+            question: "Le plastique n°7 (Autres) est toujours recyclable dans les centres de tri modernes.",
+            answer: false,
+            explanation: "FAUX. Le plastique n°7 est un mélange de résines et est souvent difficile, voire impossible, à recycler de manière économique dans les filières actuelles. La meilleure solution est l'éviter."
+        },
+        {
+            question: "La grande majorité des vêtements usagés finissent par être réutilisés en France.",
+            answer: false,
+            explanation: "FAUX. Environ 60% des vêtements collectés ne sont pas réutilisés ni recyclés et finissent incinérés ou enfouis, souvent à l'étranger, malgré les efforts de tri."
+        },
+        {
+            question: "Le compostage des biodéchets n'est pas obligatoire en France.",
+            answer: false,
+            explanation: "FAUX. Depuis le 1er janvier 2024, le tri à la source des biodéchets (déchets alimentaires et végétaux) est obligatoire pour tous les professionnels et particuliers en France."
+        },
+        {
+            question: "L'incinération des déchets est toujours neutre en carbone car elle ne brûle que des matières organiques.",
+            answer: false,
+            explanation: "FAUX. L'incinération libère des quantités importantes de CO2 et de polluants atmosphériques, car une grande partie des déchets incinérés ne sont pas de nature organique (plastique, etc.)."
+        },
+
+        // 5. Sobriété et Politique
+        {
+            question: "La 'sobriété énergétique' signifie simplement ne pas gaspiller l'énergie.",
+            answer: false,
+            explanation: "FAUX. La sobriété est plus large : c'est la réduction volontaire de nos besoins (ex: privilégier le train plutôt que l'avion), tandis que l'efficacité est le fait d'utiliser moins pour le même service (ex: isoler sa maison)."
+        },
+        {
+            question: "Le concept de 'Planète B' ou exoplanètes habitables est une solution viable à la crise climatique terrestre.",
+            answer: false,
+            explanation: "FAUX. Cette idée est techniquement irréaliste pour résoudre la crise terrestre. La seule solution est la réduction de notre impact ici et maintenant."
+        },
+        {
+            question: "Acheter des produits locaux garantit toujours une empreinte carbone plus faible que l'importation.",
+            answer: false,
+            explanation: "FAUX. Bien que souvent meilleure, cela dépend du mode de production. Par exemple, des tomates chauffées sous serre en France peuvent avoir une plus grande empreinte carbone que des tomates cultivées en plein champ et transportées par bateau depuis le sud."
+        },
+        {
+            question: "L'empreinte carbone moyenne d'un Français est supérieure à la moyenne mondiale.",
+            answer: true,
+            explanation: "VRAI. L'empreinte d'un Français se situe autour de 9 à 10 tonnes de CO2e/an, tandis que l'objectif pour la neutralité carbone est de 2 tonnes/an. La moyenne mondiale est nettement inférieure à l'empreinte française."
+        }
+    ];
+
+    // 2. Variables d'état
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let userAnswers = [];
+
+    // 3. Sélection des éléments HTML
+    const startScreen = document.getElementById("start-screen");
+    const quizScreen = document.getElementById("quiz-screen");
+    const resultScreen = document.getElementById("result-screen");
+    const questionText = document.getElementById("question-text");
+    const optionsContainer = document.getElementById("options-container");
+    const finalScore = document.getElementById("final-score");
+    const feedbackText = document.getElementById("feedback-text");
+    const reviewModal = document.getElementById("review-modal");
+    const reviewContent = document.getElementById("review-content");
+    const totalQuestions = questions.length;
+
+    // Les boutons Vrai et Faux pour le feedback
+    const trueBtn = optionsContainer.querySelector('.btn-game.true');
+    const falseBtn = optionsContainer.querySelector('.btn-game.false');
+
+    // 4. Fonctions de gestion du Quiz
+    function startQuiz() {
+        // Mélanger les questions pour une expérience renouvelée
+        questions.sort(() => Math.random() - 0.5);
+
+        startScreen.classList.remove("active");
+        quizScreen.classList.add("active");
+        resultScreen.classList.remove("active");
+
+        currentQuestionIndex = 0;
+        score = 0;
+        userAnswers = [];
+
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const currentQuestion = questions[currentQuestionIndex];
+        questionText.innerText = currentQuestion.question;
+        document.getElementById("current-question-num").innerText = currentQuestionIndex + 1;
+
+        // Réactiver les boutons
+        trueBtn.disabled = false;
+        falseBtn.disabled = false;
+        trueBtn.classList.remove('selected-correct', 'selected-wrong');
+        falseBtn.classList.remove('selected-correct', 'selected-wrong');
+        trueBtn.style.opacity = "1";
+        falseBtn.style.opacity = "1";
+    }
+
+    function selectAnswer(userChoice) {
+        const currentQuestion = questions[currentQuestionIndex];
+        const isCorrect = (userChoice === currentQuestion.answer);
+
+        // Désactiver les boutons
+        trueBtn.disabled = true;
+        falseBtn.disabled = true;
+
+        // Appliquer le feedback visuel
+        let selectedButton = userChoice ? trueBtn : falseBtn;
+        let correctButton = currentQuestion.answer ? trueBtn : falseBtn;
+
+        if (isCorrect) {
+            score++;
+            selectedButton.classList.add("selected-correct");
+        } else {
+            selectedButton.classList.add("selected-wrong");
+            correctButton.classList.add("selected-correct"); // Montrer la bonne réponse
+        }
+
+        // Griser le bouton non sélectionné
+        (userChoice ? falseBtn : trueBtn).style.opacity = "0.7";
+
+        userAnswers.push({
+            question: currentQuestion.question,
+            selected: userChoice,
+            correct: currentQuestion.answer,
+            isCorrect: isCorrect,
+            explanation: currentQuestion.explanation,
+        });
+
+        setTimeout(() => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < totalQuestions) {
+                loadQuestion();
+            } else {
+                endQuiz();
+            }
+        }, 1500);
+    }
+
+    function endQuiz() {
+        quizScreen.classList.remove("active");
+        resultScreen.classList.add("active");
+
+        finalScore.innerText = score;
+
+        generateFeedback(score);
+    }
+
+    function generateFeedback(currentScore) {
+        let message = "";
+        let color = "";
+        let percentage = (currentScore / totalQuestions) * 100;
+
+        if (percentage >= 80) {
+            message = "🌟 Champion Écologique ! Votre connaissance de l'empreinte carbone est exceptionnelle. Vous êtes un modèle de sobriété et de conscience environnementale.";
+            color = "#2ecc71"; // success-color
+        } else if (percentage >= 60) {
+            message = "🌱 Conscience Solide. Vous maîtrisez les bases de l'impact écologique. Révisez quelques étapes du cycle de vie des produits pour atteindre l'excellence.";
+            color = "#f39c12"; // Orange
+        } else if (percentage >= 40) {
+            message = "💼 Niveau Moyen. Les fondamentaux sont là, mais certains mythes persistent. Le rapport de correction est essentiel pour améliorer vos choix au quotidien.";
+            color = "#3498db"; // primary-color
+        } else {
+            message = "💡 Gros Potentiel d'Amélioration. Il est temps de déconstruire vos idées reçues sur l'environnement. L'apprentissage commence maintenant avec le rapport !";
+            color = "#e74c3c"; // error-color
+        }
+
+        feedbackText.innerText = message;
+        feedbackText.style.borderColor = color;
+    }
+
+    // 5. Fonctions du Modal de Correction
+    function showReviewModal() {
+        reviewModal.style.display = 'flex';
+        reviewContent.innerHTML = '';
+
+        userAnswers.forEach((item, index) => {
+            const reviewItem = document.createElement("div");
+
+            // Trouver la réponse de l'utilisateur en texte
+            const userChoiceText = item.selected ? 'VRAI' : 'FAUX';
+            const correctAnswerText = item.correct ? 'VRAI' : 'FAUX';
+
+            reviewItem.classList.add("review-item", item.isCorrect ? "correct-answer" : "wrong-answer");
+
+            const result = item.isCorrect ? "✅ Correct" : "❌ Incorrect";
+            const resultColor = item.isCorrect ? 'var(--success-color)' : 'var(--error-color)';
+
+            reviewItem.innerHTML = `
+                <h4>Affirmation ${index + 1} : ${item.question}</h4>
+                <p>Résultat : <span style="color: ${resultColor}; font-weight: 700;">${result}</span></p>
+                <p>Votre choix : ${userChoiceText} ${!item.isCorrect ? `<span style="color: var(--error-color);">(Faux)</span>` : ''}</p>
+                <p>Réponse correcte : ${correctAnswerText}</p>
+                <div class="explanation-box">
+                    L'explication : ${item.explanation}
+                </div>
+            `;
+            reviewContent.appendChild(reviewItem);
+        });
+    }
+
+    function closeReviewModal(event) {
+        if (event === undefined || event.target.id === 'review-modal') {
+            reviewModal.style.display = 'none';
+        }
+    }
+
+    function restartQuiz() {
+        resultScreen.classList.remove("active");
+        startScreen.classList.add("active");
+        reviewModal.style.display = 'none';
+    }
+</script>
 </body>
 </html>
