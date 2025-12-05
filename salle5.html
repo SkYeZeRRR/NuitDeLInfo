@@ -6,6 +6,9 @@
     <link rel="stylesheet" href="salle5-libre.css">
 </head>
 <body>
+    <!-- Fond de neige animée -->
+    <canvas id="snow"></canvas>
+
     <div class="game-wrapper">
         <header class="game-header">
             <h1 class="game-title">Salle 5 — Libre ou Pas Libre ?</h1>
@@ -168,6 +171,59 @@
             resultText.textContent = "";
             resultText.className = "result-text";
         }
+
+        // =========================
+        //   NEIGE ANIMÉE EN FOND
+        // =========================
+        const snowCanvas = document.getElementById("snow");
+        const snowCtx = snowCanvas.getContext("2d");
+
+        function resizeSnow() {
+            snowCanvas.width = window.innerWidth;
+            snowCanvas.height = window.innerHeight;
+        }
+
+        resizeSnow();
+        window.addEventListener("resize", resizeSnow);
+
+        let flakes = [];
+
+        function createFlakes() {
+            flakes = [];
+            const count = 200;
+            for (let i = 0; i < count; i++) {
+                flakes.push({
+                    x: Math.random() * snowCanvas.width,
+                    y: Math.random() * snowCanvas.height,
+                    radius: Math.random() * 3 + 1,
+                    speed: Math.random() * 1 + 0.5,
+                    drift: Math.random() * 1 - 0.5
+                });
+            }
+        }
+
+        function animateSnow() {
+            snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
+
+            flakes.forEach(flake => {
+                flake.y += flake.speed;
+                flake.x += flake.drift;
+
+                if (flake.y > snowCanvas.height) flake.y = -5;
+                if (flake.x > snowCanvas.width) flake.x = 0;
+                if (flake.x < 0) flake.x = snowCanvas.width;
+
+                snowCtx.beginPath();
+                snowCtx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
+                snowCtx.fillStyle = "white";
+                snowCtx.fill();
+            });
+
+            requestAnimationFrame(animateSnow);
+        }
+
+        createFlakes();
+        animateSnow();
     </script>
 </body>
 </html>
