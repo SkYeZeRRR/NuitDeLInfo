@@ -1,11 +1,624 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Quiz Négociation 🎯 : Maîtrisez la Démarche NIRN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS : DESIGN ARCADE (Palette Bleue Marine & Blanc) --- */
+        :root {
+            --primary-color: #3498db;  /* Bleu Clair (Surbrillance, Boutons) */
+            --secondary-color: #2c3e50; /* Bleu Marine (Fonds Conteneurs) */
+            --bg-color: #1a2530;       /* Fond Ambiant Bleu Nuit (légèrement ajusté pour contraste) */
+            --card-color: var(--secondary-color); /* Fonds des conteneurs = Bleu Marine */
+            --text-color: #ffffff;     /* Texte principal = Blanc */
+            --success-color: #2ecc71;  /* Vert pour le succès */
+            --error-color: #e74c3c;    /* Rouge pour les erreurs/timer */
+        }
+
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background-color: var(--bg-color);
+            /* Le dégradé utilise le fond Ambiant (bleu nuit) et le fond gris clair/bleu */
+            background-image: linear-gradient(135deg, var(--bg-color) 0%, #001f3f 100%);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            font-size: 10px;
+        }
+
+        .container {
+            background: var(--card-color);
+            padding: 3rem;
+            border-radius: 20px;
+            /* Contour bleu clair (surbrillance) */
+            box-shadow: 0 0 0 5px var(--primary-color), 0 20px 40px rgba(0,0,0,0.5);
+            width: 95%;
+            max-width: 700px;
+            text-align: center;
+            position: relative;
+            transition: transform 0.3s;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        h1, h2 {
+            color: var(--primary-color); /* Les titres sont en bleu clair pour contraster */
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        /* Boutons */
+        .btn {
+            background-color: var(--primary-color);
+            color: var(--secondary-color); /* Texte sur bouton clair en foncé */
+            border: none;
+            padding: 14px 35px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            margin: 10px 5px;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn:hover {
+            background-color: #7fbfec; /* Bleu plus clair au survol */
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: var(--text-color); /* Bouton secondaire en blanc */
+            color: var(--secondary-color); /* Texte sur bouton blanc en foncé */
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background-color: #ccc;
+        }
+
+        /* Quiz Header */
+        .header-quiz {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--primary-color); /* Séparateur bleu clair */
+            padding-bottom: 10px;
+        }
+
+        .timer-box, .progress-box {
+            font-weight: 700;
+            padding: 5px 15px;
+            border-radius: 10px;
+            background: var(--bg-color); /* Fond très foncé pour ces boîtes */
+            color: var(--primary-color); /* Texte en bleu clair */
+            font-size: 0.6rem;
+            border: 1px solid var(--primary-color);
+        }
+
+        .timer-box.critical {
+            color: var(--error-color);
+            animation: pulse 1s infinite;
+        }
+
+        .question-text {
+            color: var(--text-color); /* Texte de question en blanc */
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .option-btn {
+            background-color: #1a2530; /* Fond foncé */
+            color: var(--text-color); /* Texte en blanc */
+            border: 1px solid var(--primary-color); /* Contour bleu clair */
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: #34495e; /* Léger changement de couleur au survol */
+            border-color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        /* Vrai/Faux Feedback */
+        .option-btn.correct {
+            background-color: var(--success-color);
+            color: var(--secondary-color); /* Texte foncé pour lisibilité sur vert clair */
+            border-color: var(--success-color);
+        }
+
+        .option-btn.wrong {
+            background-color: var(--error-color);
+            color: var(--text-color);
+            border-color: var(--error-color);
+        }
+
+        /* Section Résultat */
+        .score-display {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 20px 0 10px;
+        }
+
+        .time-details {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0 30px;
+            padding: 15px;
+            background: #1a2530; /* Fond très foncé */
+            border-radius: 10px;
+        }
+
+        .time-detail strong {
+            display: block;
+            font-size: 1.2rem;
+            color: var(--primary-color); /* Temps en bleu clair */
+        }
+
+        .feedback {
+            font-size: 0.8rem;
+            margin: 20px 0;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid var(--primary-color);
+            background: #1a2530; /* Fond très foncé */
+            color: var(--text-color); /* Texte blanc */
+        }
+
+        /* Modal de Correction */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85); /* Plus opaque */
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--secondary-color); /* Bleu marine */
+            color: var(--text-color);
+            padding: 40px;
+            border-radius: 15px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.8);
+        }
+
+        .review-item {
+            margin-bottom: 25px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            background: #1a2530; /* Fond des items plus foncé que le modal */
+            border: 1px solid var(--primary-color);
+        }
+
+        .review-item h4 {
+            margin-top: 0;
+            font-size: 0.9rem;
+            color: var(--primary-color);
+        }
+
+        /* Ajustements de couleur pour la correction sur fond sombre */
+        .review-item.correct-answer {
+            background: #0d3222; /* Vert foncé pour le succès */
+            border-left: 5px solid var(--success-color);
+        }
+
+        .review-item.wrong-answer {
+            background: #440d0d; /* Rouge foncé pour l'erreur */
+            border-left: 5px solid var(--error-color);
+        }
+
+        .explanation-box {
+            font-style: italic;
+            font-size: 0.7rem;
+            color: #ccc; /* Gris clair */
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #555;
+        }
+        /* ... Animations et Media Queries inchangées ... */
+    </style>
 </head>
 <body>
-    <p>hello</p>
+
+<div class="container">
+
+    <div id="start-screen" class="screen active">
+        <h1>🎯 Quiz Négociation</h1>
+        <p style="color: var(--primary-color); font-weight: 600; text-transform: uppercase;">La Démarche NIRN (Négociation, Information, Relation, Négociation)</p>
+        <p>Testez vos connaissances sur les étapes clés pour mener une négociation efficace.</p>
+        <div style="background: #1a2530; padding: 20px; border-radius: 10px; margin: 25px 0; text-align: left; border-left: 4px solid var(--primary-color);">
+            👉 15 questions sur les étapes de Préparation, Information, Établissement de la Relation et Conclusion.<br>
+            💡 Rapport de correction détaillé à la fin, incluant le temps mis !
+        </div>
+        <button onclick="startQuiz()" class="btn">Démarrer le Quiz NIRN</button>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+        <div class="header-quiz">
+            <div class="timer-box">
+                ⏱️ <span id="time">15</span> secondes
+            </div>
+            <div class="progress-box">
+                Question <span id="current-question-num">1</span> / 15
+            </div>
+        </div>
+
+        <div class="question-container">
+            <div class="question-text" id="question-text">
+                Chargement de la question...
+            </div>
+            <div id="options-container" class="options-grid">
+            </div>
+        </div>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h2>🏆 Bilan de Compétences !</h2>
+        <p>Votre performance sur la démarche NIRN :</p>
+        <div class="score-display">
+            <span id="final-score">0</span> / 15
+        </div>
+
+        <div class="time-details">
+            <div class="time-detail">
+                <small>Temps Total</small>
+                <strong id="total-time-display">0s</strong>
+            </div>
+            <div class="time-detail">
+                <small>Temps Moyen par Question</small>
+                <strong id="avg-time-display">0s</strong>
+            </div>
+        </div>
+
+        <p id="feedback-text" class="feedback"></p>
+
+        <button onclick="showReviewModal()" class="btn btn-secondary">Voir la Correction (Pourquoi ?)</button>
+        <button onclick="restartQuiz()" class="btn">Rejouer</button>
+    </div>
+
+</div>
+
+<div id="review-modal" class="modal" onclick="closeReviewModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h2 style="color: var(--primary-color);">Rapport de Correction Détaillé</h2>
+        <p>Analyse de vos réponses et explications des concepts clés de la négociation.</p>
+        <div id="review-content">
+        </div>
+        <button onclick="closeReviewModal()" class="btn" style="margin-top: 20px;">Fermer le Rapport</button>
+    </div>
+</div>
+
+<script>
+    // --- JAVASCRIPT : LOGIQUE AVANCÉE (Non modifiée) ---
+
+    // 1. La base de données de questions (Thème NIRN)
+    const questions = [
+        // Étape N (Préparation / Négociation Initiale)
+        {
+            question: "Quelle est la fonction principale de la BATNA (Best Alternative To a Negotiated Agreement) ?",
+            options: ["Définir votre objectif de prix idéal", "Évaluer le seuil de rupture de la négociation", "Servir de point de départ aux concessions", "Identifier les besoins de l'autre partie"],
+            answer: 1,
+            explanation: "La BATNA détermine votre meilleure option en cas d'échec des négociations. Elle fixe votre seuil de rupture et votre pouvoir réel."
+        },
+        {
+            question: "Que représente la ZOPA (Zone of Possible Agreement) ?",
+            options: ["La zone d'influence géographique des parties", "L'écart entre le prix d'ouverture et le prix de fermeture", "La zone de chevauchement des objectifs acceptables", "L'ensemble des sujets abordés dans la négociation"],
+            answer: 2,
+            explanation: "La ZOPA est la zone où les objectifs acceptables des deux parties se chevauchent, permettant un accord mutuellement satisfaisant."
+        },
+        {
+            question: "Lors de la préparation, quel type d'objectif est le plus important à définir ?",
+            options: ["L'objectif plancher (le minimum acceptable)", "L'objectif idéal (le maximum souhaité)", "L'objectif crédible (le réaliste)", "Les trois sont essentiels"],
+            answer: 3,
+            explanation: "Les trois niveaux d'objectifs (plancher, crédible, idéal) sont essentiels pour encadrer la négociation et éviter les regrets ou les ruptures inutiles."
+        },
+
+        // Étape I (Information / Écoute)
+        {
+            question: "Dans la phase d'Information, quel est l'objectif principal des questions ouvertes ?",
+            options: ["Obtenir une réponse par 'Oui' ou 'Non'", "Contrôler la direction de l'entretien", "Encourager l'autre partie à s'exprimer librement et à dévoiler ses besoins", "Valider un point précis rapidement"],
+            answer: 2,
+            explanation: "Les questions ouvertes (commençant par 'Comment', 'Pourquoi', 'Quoi') permettent de découvrir les motivations, les priorités et les contraintes de l'interlocuteur."
+        },
+        {
+            question: "Qu'est-ce que l'écoute active ?",
+            options: ["Écouter sans interruption", "Reformuler, poser des questions de clarification et valider la compréhension", "Se concentrer uniquement sur les chiffres et les faits", "Préparer mentalement sa prochaine réplique"],
+            answer: 1,
+            explanation: "L'écoute active implique une participation consciente, notamment par la reformulation et la validation, pour s'assurer de la bonne compréhension et montrer de l'empathie."
+        },
+        {
+            question: "Comment doit-on gérer un silence pendant la phase d'Information ?",
+            options: ["Le combler immédiatement pour éviter la gêne", "Le considérer comme un signe d'accord", "Le respecter, car il pousse souvent l'autre partie à donner plus d'information", "L'utiliser pour changer de sujet"],
+            answer: 2,
+            explanation: "Un silence bien géré est un outil puissant. Il exerce une pression subtile sur l'interlocuteur, l'incitant souvent à en dire plus sur ses réels besoins ou contraintes."
+        },
+
+        // Étape R (Relation / Rapport)
+        {
+            question: "Comment établit-on la confiance (phase Relation) rapidement avec l'autre partie ?",
+            options: ["En parlant de soi et de ses réussites", "En faisant preuve de transparence et en reconnaissant les points communs", "En faisant une concession majeure dès le départ", "En étant strictement factuel et distant"],
+            answer: 1,
+            explanation: "La confiance se bâtit par l'authenticité, la transparence et la découverte de points communs (personnels ou professionnels) qui créent un climat de collaboration."
+        },
+        {
+            question: "Quel rôle joue le langage corporel dans la phase Relation ?",
+            options: ["Il est moins important que le discours", "Il représente environ 5% de la communication", "Il doit être dominant pour affirmer l'autorité", "Il transmet plus de 50% du message et révèle l'état émotionnel"],
+            answer: 3,
+            explanation: "Le non-verbal (posture, gestes, micro-expressions) est essentiel dans la création de la relation et du climat de confiance."
+        },
+        {
+            question: "Que signifie 'isoler une objection' ?",
+            options: ["Ignorer l'objection et passer à autre chose", "Demander s'il n'y a pas d'autres objections avant de la traiter", "Répondre immédiatement avec un argument fort", "Dire que l'objection est infondée"],
+            answer: 1,
+            explanation: "Isoler l'objection (en demandant 'À part cela, tout le reste vous convient ?') permet de s'assurer qu'il s'agit du seul point de blocage avant d'investir de l'énergie pour le résoudre."
+        },
+        {
+            question: "Quel comportement est un signe de faible engagement de l'autre partie ?",
+            options: ["Poser beaucoup de questions techniques", "Hésiter à discuter des termes financiers", "Évoquer souvent sa BATNA", "Exprimer de l'enthousiasme pour le produit"],
+            answer: 2,
+            explanation: "Si l'interlocuteur hésite à parler argent ou ne donne pas accès à la personne qui prend la décision, cela peut indiquer un faible engagement ou une absence de pouvoir d'achat."
+        },
+
+        // Étape N (Conclusion / Négociation Finale)
+        {
+            question: "Qu'est-ce que la technique d'ancrage dans la phase finale ?",
+            options: ["Fixer un lieu de rencontre idéal", "Proposer une première offre très favorable", "Proposer une première offre volontairement extrême pour influencer la perception", "Ne rien proposer et attendre l'offre de l'autre partie"],
+            answer: 2,
+            explanation: "L'ancrage consiste à poser une première offre ambitieuse (mais défendable) qui 'ancre' la négociation autour de ce point de référence, même si l'accord final est loin de cette offre."
+        },
+        {
+            question: "Comment présenter une concession de manière professionnelle ?",
+            options: ["La donner discrètement sans commentaire", "La faire précéder d'un 'Si... alors' (contrepartie)", "La faire passer pour une erreur corrigée", "La donner uniquement à la toute fin"],
+            answer: 1,
+            explanation: "Toute concession doit être conditionnelle et valorisée ('Si je vous accorde cela, qu'êtes-vous prêt à faire en échange ?'). Ne jamais donner gratuitement."
+        },
+        {
+            question: "Quel est le risque de faire une concession progressive (petites concessions successives) ?",
+            options: ["L'autre partie se sent satisfaite rapidement", "Cela crée un sentiment de pénurie", "L'autre partie pense que vous avez une marge illimitée", "Cela facilite la relation"],
+            answer: 2,
+            explanation: "Faire des concessions successives donne l'impression que vous pouvez toujours aller plus loin, affaiblissant ainsi votre position et encourageant l'autre partie à demander plus."
+        },
+        {
+            question: "Quelle est la meilleure technique de clôture si l'accord est proche mais hésitant ?",
+            options: ["Clôture par ultimatum ('C'est ça ou rien')", "Clôture par l'alternative ('Préférez-vous le forfait A ou B ?')", "Clôture par le silence", "Clôture par la menace"],
+            answer: 1,
+            explanation: "La clôture par l'alternative suppose que la décision est déjà prise et ne laisse que le choix du détail, facilitant ainsi la finalisation."
+        }
+    ];
+
+    // 2. Variables d'état étendues
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timer;
+    let timeLeft = 15;
+    const timePerQuestion = 15;
+    let quizStartTime;
+    let quizEndTime;
+    let userAnswers = [];
+
+    // 3. Sélection des éléments HTML (Mise à jour pour les nouveaux éléments)
+    const startScreen = document.getElementById("start-screen");
+    const quizScreen = document.getElementById("quiz-screen");
+    const resultScreen = document.getElementById("result-screen");
+    const questionText = document.getElementById("question-text");
+    const optionsContainer = document.getElementById("options-container");
+    const timeDisplay = document.getElementById("time");
+    const finalScore = document.getElementById("final-score");
+    const feedbackText = document.getElementById("feedback-text");
+    const totalTimeDisplay = document.getElementById("total-time-display");
+    const avgTimeDisplay = document.getElementById("avg-time-display");
+    const reviewModal = document.getElementById("review-modal");
+    const reviewContent = document.getElementById("review-content");
+
+    // 4. Fonctions de gestion du Quiz
+    function startQuiz() {
+        startScreen.classList.remove("active");
+        quizScreen.classList.add("active");
+        resultScreen.classList.remove("active");
+
+        currentQuestionIndex = 0;
+        score = 0;
+        userAnswers = [];
+        quizStartTime = new Date().getTime();
+
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        clearInterval(timer);
+        timeLeft = timePerQuestion;
+        timeDisplay.innerText = timeLeft;
+        timeDisplay.parentElement.classList.remove('critical');
+        startTimer();
+
+        const currentQuestion = questions[currentQuestionIndex];
+        questionText.innerText = currentQuestion.question;
+        document.getElementById("current-question-num").innerText = currentQuestionIndex + 1;
+
+        optionsContainer.innerHTML = "";
+
+        currentQuestion.options.forEach((option, index) => {
+            const button = document.createElement("button");
+            button.innerText = option;
+            button.classList.add("option-btn");
+            button.onclick = () => selectAnswer(index);
+            optionsContainer.appendChild(button);
+        });
+    }
+
+    function startTimer() {
+        timer = setInterval(() => {
+            timeLeft--;
+            timeDisplay.innerText = timeLeft;
+
+            if(timeLeft <= 5) {
+                timeDisplay.parentElement.classList.add('critical');
+            }
+
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                selectAnswer(-1);
+            }
+        }, 1000);
+    }
+
+    function selectAnswer(selectedIndex) {
+        clearInterval(timer);
+        const currentQuestion = questions[currentQuestionIndex];
+        const buttons = optionsContainer.getElementsByClassName("option-btn");
+        const timeSpent = timePerQuestion - (timeLeft > 0 ? timeLeft : 0);
+
+        for (let btn of buttons) {
+            btn.disabled = true;
+            btn.style.opacity = "0.7";
+        }
+        if (selectedIndex === currentQuestion.answer) {
+            buttons[selectedIndex].classList.add("correct");
+            buttons[selectedIndex].style.opacity = "1";
+            score++;
+        } else {
+            if (selectedIndex !== -1) {
+                buttons[selectedIndex].classList.add("wrong");
+            }
+            buttons[currentQuestion.answer].classList.add("correct");
+            buttons[currentQuestion.answer].style.opacity = "1";
+        }
+
+        userAnswers.push({
+            question: currentQuestion.question,
+            options: currentQuestion.options,
+            selected: selectedIndex,
+            correct: currentQuestion.answer,
+            isCorrect: (selectedIndex === currentQuestion.answer),
+            explanation: currentQuestion.explanation,
+            timeSpent: timeSpent
+        });
+
+        setTimeout(() => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                endQuiz();
+            }
+        }, 1500);
+    }
+
+    function endQuiz() {
+        quizScreen.classList.remove("active");
+        resultScreen.classList.add("active");
+        quizEndTime = new Date().getTime();
+
+        const totalTime = ((quizEndTime - quizStartTime) / 1000).toFixed(1);
+        const avgTime = (totalTime / questions.length).toFixed(1);
+
+        finalScore.innerText = score;
+        totalTimeDisplay.innerText = totalTime + 's';
+        avgTimeDisplay.innerText = avgTime + 's';
+
+        generateFeedback(score);
+    }
+
+    function generateFeedback(currentScore) {
+        let message = "";
+        let color = "";
+
+        if (currentScore === 15) {
+            message = "👑 Expert en Négociation ! Votre maîtrise de la démarche NIRN est parfaite. Vous êtes prêt(e) à conclure les affaires les plus complexes.";
+            color = "#27ae60";
+        } else if (currentScore >= 11) {
+            message = "⭐ Maîtrise Forte ! Vous avez une excellente compréhension des fondamentaux (BATNA, ZOPA, Relation). Quelques détails à perfectionner.";
+            color = "#2ecc71";
+        } else if (currentScore >= 6) {
+            message = "💼 Bases Acquises. Vous connaissez les grandes étapes de la NIRN. Concentrez-vous sur les techniques spécifiques (Ancrage, Concessions).";
+            color = "#f39c12";
+        } else {
+            message = "🧭 Piste de Progrès. Il est temps d'approfondir chaque étape de la négociation. Le rapport de correction est votre meilleur outil !";
+            color = "#e74c3c";
+        }
+
+        feedbackText.innerText = message;
+        feedbackText.style.borderColor = color;
+    }
+
+    // 5. Fonctions du Modal de Correction
+    function showReviewModal() {
+        reviewModal.style.display = 'flex';
+        reviewContent.innerHTML = '';
+
+        userAnswers.forEach((item, index) => {
+            const reviewItem = document.createElement("div");
+            reviewItem.classList.add("review-item", item.isCorrect ? "correct-answer" : "wrong-answer");
+
+            const result = item.isCorrect ? "✅ Correct" : "❌ Incorrect";
+            const userChoiceText = item.selected !== -1 ? item.options[item.selected] : "Aucune réponse (Temps écoulé)";
+            const correctAnswerText = item.options[item.correct];
+
+            // Définir la couleur du résultat pour la consistance
+            const resultColor = item.isCorrect ? 'var(--success-color)' : 'var(--error-color)';
+
+            reviewItem.innerHTML = `
+                    <h4>Question ${index + 1} : ${item.question}</h4>
+                    <p>Résultat : <span style="color: ${resultColor}; font-weight: 700;">${result}</span> (Temps : ${item.timeSpent}s)</p>
+                    <p>Votre choix : ${userChoiceText} ${!item.isCorrect && item.selected !== -1 ? `<span style="color: var(--error-color);">(Faux)</span>` : ''}</p>
+                    <p>Réponse correcte : ${correctAnswerText}</p>
+                    <div class="explanation-box">
+                        L'explication (Pourquoi ?) : ${item.explanation}
+                    </div>
+                `;
+            reviewContent.appendChild(reviewItem);
+        });
+    }
+
+    function closeReviewModal(event) {
+        if (event === undefined || event.target.id === 'review-modal') {
+            reviewModal.style.display = 'none';
+        }
+    }
+
+    function restartQuiz() {
+        resultScreen.classList.remove("active");
+        startScreen.classList.add("active");
+        reviewModal.style.display = 'none';
+    }
+</script>
 </body>
 </html>
