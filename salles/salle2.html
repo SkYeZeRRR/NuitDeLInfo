@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Salle 2 — Choisis ton OS idéal</title>
+
+    <!-- Police arcade / pixel -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <!-- Feuille de style -->
+    <link rel="stylesheet" href="../css/salle2.css">
+</head>
+<body>
+<div class="game-wrapper">
+    <div class="header">
+        <h1>Salle 2 — Passer de Windows à Linux</h1>
+        <h2>Mini-jeu : “Choisis ton OS idéal” 🧪</h2>
+        <p>Glisse chaque caractéristique dans le bon OS : Windows, macOS ou Linux.</p>
+    </div>
+
+    <div class="layout">
+        <!-- OS Cards -->
+        <div class="os-cards">
+            <!-- Windows -->
+            <div class="os-card">
+                <div class="os-tag">Windows</div>
+                <h3>Windows</h3>
+                <ul>
+                    <li>Très répandu sur les PC</li>
+                    <li>Beaucoup de logiciels propriétaires</li>
+                    <li>Très utilisé pour les jeux vidéo</li>
+                </ul>
+                <div id="windows-drop"
+                     class="drop-zone empty"
+                     data-os="windows"
+                     data-label="Caractéristiques de Windows ici">
+                </div>
+            </div>
+
+            <!-- macOS -->
+            <div class="os-card">
+                <div class="os-tag">macOS</div>
+                <h3>macOS</h3>
+                <ul>
+                    <li>Uniquement sur les Mac</li>
+                    <li>Écosystème Apple très intégré</li>
+                    <li>Matériel premium et coûteux</li>
+                </ul>
+                <div id="mac-drop"
+                     class="drop-zone empty"
+                     data-os="mac"
+                     data-label="Caractéristiques de macOS ici">
+                </div>
+            </div>
+
+            <!-- Linux -->
+            <div class="os-card linux">
+                <span class="linux-badge">Objectif sobriété 🎯</span>
+                <div class="os-tag">Linux</div>
+                <h3>Linux</h3>
+                <ul>
+                    <li>Idéal pour la sobriété numérique</li>
+                </ul>
+                <div id="linux-drop"
+                     class="drop-zone empty"
+                     data-os="linux"
+                     data-label="Caractéristiques de Linux ici">
+                </div>
+            </div>
+        </div>
+
+        <!-- Tokens -->
+        <aside class="side-panel">
+            <h4>Caractéristiques à placer 🧩</h4>
+            <p style="font-size:0.6rem; line-height:1.4;">
+                Glisse chaque jeton dans l’OS qui lui correspond.  
+                Tu peux corriger autant que tu veux avant de cliquer sur <strong>Vérifier</strong>.
+            </p>
+            <div id="token-pool" class="token-pool">
+                <!-- Linux -->
+                <div class="token" draggable="true" data-target="linux">
+                    Gratuit ou très faible coût de licence
+                </div>
+                <div class="token" draggable="true" data-target="linux">
+                    Logiciel libre & code source ouvert
+                </div>
+                <div class="token" draggable="true" data-target="linux">
+                    Fonctionne bien sur du vieux matériel
+                </div>
+                <div class="token" draggable="true" data-target="linux">
+                    Très personnalisable selon les besoins
+                </div>
+                <div class="token" draggable="true" data-target="linux">
+                    Respect fort de la vie privée
+                </div>
+
+                <!-- Windows -->
+                <div class="token" draggable="true" data-target="windows">
+                    Licence propriétaire payante
+                </div>
+                <div class="token" draggable="true" data-target="windows">
+                    Très utilisé pour les jeux vidéo commerciaux
+                </div>
+                <div class="token" draggable="true" data-target="windows">
+                    Souvent présent par défaut sur les PC achetés
+                </div>
+                <div class="token" draggable="true" data-target="windows">
+                    Mises à jour parfois imposées et lourdes
+                </div>
+
+                <!-- macOS -->
+                <div class="token" draggable="true" data-target="mac">
+                    Réservé au matériel Apple
+                </div>
+                <div class="token" draggable="true" data-target="mac">
+                    Écosystème très intégré matériel + logiciel
+                </div>
+                <div class="token" draggable="true" data-target="mac">
+                    Image premium et orientée créatifs
+                </div>
+                <div class="token" draggable="true" data-target="mac">
+                    Matériel souvent plus cher que la moyenne
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <div class="controls">
+        <button id="check-btn" class="btn-primary">✔ Vérifier</button>
+        <button id="reset-btn" class="btn-secondary">🔁 Reset</button>
+        <div id="feedback" class="feedback">
+            Place les caractéristiques puis clique sur “Vérifier”.
+        </div>
+    </div>
+</div>
+
+<script>
+    const tokens = document.querySelectorAll('.token');
+    const dropZones = document.querySelectorAll('.drop-zone');
+    const tokenPool = document.getElementById('token-pool');
+    const checkBtn = document.getElementById('check-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const feedback = document.getElementById('feedback');
+
+    let draggedToken = null;
+
+    // Drag & drop de base
+    tokens.forEach(token => {
+        token.addEventListener('dragstart', () => {
+            draggedToken = token;
+        });
+        token.addEventListener('dragend', () => {
+            draggedToken = null;
+        });
+    });
+
+    function makeDroppable(area) {
+        area.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        area.addEventListener('drop', () => {
+            if (!draggedToken) return;
+            area.appendChild(draggedToken);
+            updateEmptyStates();
+            clearHighlights();
+        });
+    }
+
+    dropZones.forEach(zone => makeDroppable(zone));
+    makeDroppable(tokenPool);
+
+    function updateEmptyStates() {
+        dropZones.forEach(zone => {
+            const hasToken = zone.querySelector('.token') !== null;
+            zone.classList.toggle('empty', !hasToken);
+        });
+    }
+
+    function clearHighlights() {
+        tokens.forEach(t => {
+            t.classList.remove('correct-highlight', 'wrong-highlight');
+        });
+        dropZones.forEach(z => {
+            z.classList.remove('valid', 'invalid');
+        });
+    }
+
+    // Vérification globale
+    checkBtn.addEventListener('click', () => {
+        clearHighlights();
+
+        let correct = 0;
+        let wrong = 0;
+        const total = tokens.length;
+
+        tokens.forEach(token => {
+            const target = token.dataset.target;
+            const parent = token.parentElement;
+
+            if (parent.classList.contains('drop-zone')) {
+                const zoneOs = parent.dataset.os;
+                if (zoneOs === target) {
+                    correct++;
+                    token.classList.add('correct-highlight');
+                } else {
+                    wrong++;
+                    token.classList.add('wrong-highlight');
+                }
+            }
+        });
+
+        const placed = correct + wrong;
+        const unplaced = total - placed;
+
+        if (correct === total && wrong === 0) {
+            feedback.textContent =
+                "Parfait ! Tu as placé toutes les caractéristiques dans le bon OS. 🐧🎉";
+            feedback.className = "feedback success";
+            dropZones.forEach(z => z.classList.add('valid'));
+        } else {
+            feedback.textContent =
+                `Résultat : ${correct}/${total} bien placées, ` +
+                `${wrong} au mauvais endroit, ${unplaced} encore dans la zone de départ.`;
+            feedback.className = "feedback error";
+            if (wrong > 0) {
+                dropZones.forEach(z => z.classList.add('invalid'));
+            }
+        }
+    });
+
+    // Reset
+    resetBtn.addEventListener('click', () => {
+        tokens.forEach(token => tokenPool.appendChild(token));
+        updateEmptyStates();
+        clearHighlights();
+        feedback.textContent = "Place les caractéristiques puis clique sur “Vérifier”.";
+        feedback.className = "feedback";
+    });
+
+    updateEmptyStates();
+</script>
+
+</body>
+</html>
