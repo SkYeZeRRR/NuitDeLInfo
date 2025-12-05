@@ -1,11 +1,582 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="UTF-8" />
+<title>Parcours Rétro – Style Pokémon Rouge</title>
+<style>
+/* --- 1. Styles de Base Rétro --- */
+body {
+    margin: 0;
+    background: #000000;
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    color: #ffffff;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#game {
+    width: 640px;
+    height: 576px; 
+    background: #000000;
+    border: 8px solid #888888;
+    box-shadow: 0 0 0 4px #000000, 0 0 20px rgba(0,0,0,0.5);
+    position: relative;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+/* --- 2. Canvas pour la salle --- */
+#room-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+/* --- 3. Boîte de dialogue style Game Boy --- */
+#text-interface {
+    background: #f8f8f8;
+    border: 4px solid #000000;
+    padding: 12px;
+    width: 90%;
+    max-width: 560px;
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    box-shadow: inset -2px -2px 0 #a0a0a0, inset 2px 2px 0 #ffffff;
+}
+
+#title {
+    color: #000000;
+    text-transform: uppercase;
+    font-size: 0.7em;
+    margin: 0 0 8px 0;
+    letter-spacing: 1px;
+}
+
+#text {
+    font-size: 0.65em;
+    line-height: 1.6;
+    color: #000000;
+    letter-spacing: 0.5px;
+}
+
+/* --- 4. Boîte d'erreur --- */
+#error-box {
+    background: #f83800;
+    border: 4px solid #000000;
+    padding: 12px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 200;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 0.7em;
+    display: none;
+    text-align: center;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+    animation: blinker 0.5s step-start infinite;
+}
+
+@keyframes blinker {
+    50% { opacity: 0.7; }
+}
+
+/* --- 5. Choix de réponses (menu style Pokémon) --- */
+.choices {
+    background: #f8f8f8;
+    border: 4px solid #000000;
+    padding: 8px;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+    min-width: 280px;
+    box-shadow: inset -2px -2px 0 #a0a0a0, inset 2px 2px 0 #ffffff;
+}
+
+button {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    margin: 4px 0;
+    border: none;
+    background: #f8f8f8;
+    color: #000000;
+    font-weight: bold;
+    font-size: 0.65em;
+    text-align: left;
+    cursor: pointer;
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    transition: background 0.1s;
+    letter-spacing: 0.5px;
+}
+
+button:hover, button.selected {
+    background: #000000;
+    color: #ffffff;
+}
+
+button:before {
+    content: '▶ ';
+    opacity: 0;
+}
+
+button:hover:before, button.selected:before {
+    opacity: 1;
+}
+
+/* --- 6. Sprite du PC (personnage) --- */
+#pc-sprite {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    z-index: 50;
+    transition: all 0.3s steps(4);
+    image-rendering: pixelated;
+}
+</style>
 </head>
 <body>
-    <p>hello</p>
+<div id="game">
+    <canvas id="room-canvas" width="640" height="576"></canvas>
+    <div id="pc-sprite">💻</div>
+    
+    <div class="choices" id="choices"></div>
+    
+    <div id="text-interface">
+        <div id="title"></div>
+        <div id="text"></div>
+    </div>
+    
+    <div id="error-box"></div>
+</div>
+
+<script>
+let salle = 0;
+
+// Canvas setup
+const canvas = document.getElementById('room-canvas');
+const ctx = canvas.getContext('2d');
+
+// Positions du PC sprite
+const pcPositions = [
+    {top: 320, left: 304, room: 'entreprise'},
+    {top: 320, left: 304, room: 'bts'},
+    {top: 320, left: 304, room: 'cdi'},
+    {top: 320, left: 304, room: 'recyclage'}
+];
+
+// Couleurs Game Boy (palette 4 nuances de gris-vert)
+const COLORS = {
+    darkest: '#0f380f',
+    dark: '#306230',
+    light: '#8bac0f',
+    lightest: '#9bbc0f',
+    white: '#f8f8f8',
+    black: '#000000'
+};
+
+// Dessine une tuile (16x16 pixels)
+function drawTile(x, y, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x * 16, y * 16, 16, 16);
+}
+
+// Dessine une bordure de tuile
+function drawTileBorder(x, y, color = COLORS.black) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x * 16, y * 16, 16, 16);
+}
+
+// Dessine le sol (pattern damier)
+function drawFloor(color1, color2) {
+    for (let y = 0; y < 36; y++) {
+        for (let x = 0; x < 40; x++) {
+            const color = (x + y) % 2 === 0 ? color1 : color2;
+            drawTile(x, y, color);
+        }
+    }
+}
+
+// Dessine un mur
+function drawWall(x, y, width, height, color = COLORS.darkest) {
+    for (let dy = 0; dy < height; dy++) {
+        for (let dx = 0; dx < width; dx++) {
+            drawTile(x + dx, y + dy, color);
+            drawTileBorder(x + dx, y + dy);
+        }
+    }
+}
+
+// Dessine un bureau (table)
+function drawDesk(x, y) {
+    // Plateau
+    ctx.fillStyle = '#8b4513';
+    ctx.fillRect(x * 16, y * 16, 32, 16);
+    ctx.strokeStyle = COLORS.black;
+    ctx.strokeRect(x * 16, y * 16, 32, 16);
+    
+    // Pieds
+    ctx.fillStyle = '#654321';
+    ctx.fillRect(x * 16 + 2, (y + 1) * 16, 4, 8);
+    ctx.fillRect(x * 16 + 26, (y + 1) * 16, 4, 8);
+}
+
+// Dessine un ordinateur
+function drawComputer(x, y) {
+    // Écran
+    ctx.fillStyle = '#4a4a4a';
+    ctx.fillRect(x * 16 + 4, y * 16 + 2, 8, 8);
+    ctx.strokeStyle = COLORS.black;
+    ctx.strokeRect(x * 16 + 4, y * 16 + 2, 8, 8);
+    
+    // Écran allumé
+    ctx.fillStyle = '#00ff00';
+    ctx.fillRect(x * 16 + 5, y * 16 + 3, 6, 6);
+}
+
+// Dessine une bibliothèque
+function drawBookshelf(x, y, width) {
+    for (let dx = 0; dx < width; dx++) {
+        // Structure
+        ctx.fillStyle = '#8b4513';
+        ctx.fillRect((x + dx) * 16, y * 16, 16, 32);
+        ctx.strokeStyle = COLORS.black;
+        ctx.strokeRect((x + dx) * 16, y * 16, 16, 32);
+        
+        // Livres colorés
+        for (let i = 0; i < 3; i++) {
+            const colors = ['#ff0000', '#0000ff', '#00ff00', '#ffff00'];
+            ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+            ctx.fillRect((x + dx) * 16 + 2, y * 16 + 4 + i * 8, 4, 6);
+            ctx.fillRect((x + dx) * 16 + 8, y * 16 + 4 + i * 8, 4, 6);
+        }
+    }
+}
+
+// Dessine une poubelle de recyclage
+function drawRecycleBin(x, y) {
+    // Corps de la poubelle
+    ctx.fillStyle = '#4CAF50';
+    ctx.fillRect(x * 16 + 2, y * 16 + 2, 12, 12);
+    ctx.strokeStyle = COLORS.black;
+    ctx.strokeRect(x * 16 + 2, y * 16 + 2, 12, 12);
+    
+    // Symbole recyclage simplifié
+    ctx.fillStyle = COLORS.white;
+    ctx.fillRect(x * 16 + 6, y * 16 + 5, 4, 6);
+}
+
+// Dessine une plante
+function drawPlant(x, y) {
+    // Pot
+    ctx.fillStyle = '#8b4513';
+    ctx.fillRect(x * 16 + 4, y * 16 + 10, 8, 6);
+    
+    // Plante
+    ctx.fillStyle = '#228B22';
+    ctx.fillRect(x * 16 + 6, y * 16 + 4, 4, 8);
+    ctx.fillRect(x * 16 + 4, y * 16 + 6, 8, 4);
+}
+
+// Dessine une porte
+function drawDoor(x, y) {
+    ctx.fillStyle = '#654321';
+    ctx.fillRect(x * 16, y * 16, 32, 48);
+    ctx.strokeStyle = COLORS.black;
+    ctx.strokeRect(x * 16, y * 16, 32, 48);
+    
+    // Poignée
+    ctx.fillStyle = '#FFD700';
+    ctx.fillRect(x * 16 + 24, y * 16 + 24, 4, 4);
+}
+
+// === SALLE 1: GRANDE ENTREPRISE (Open Space) ===
+function drawEntreprise() {
+    // Sol (gris clair)
+    drawFloor('#cccccc', '#d4d4d4');
+    
+    // Murs
+    drawWall(0, 0, 40, 2, '#7a7a7a'); // Mur haut
+    drawWall(0, 34, 40, 2, '#7a7a7a'); // Mur bas
+    drawWall(0, 2, 2, 32, '#7a7a7a'); // Mur gauche
+    drawWall(38, 2, 2, 32, '#7a7a7a'); // Mur droit
+    
+    // Rangées de bureaux avec ordinateurs
+    for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 4; col++) {
+            const x = 6 + col * 8;
+            const y = 6 + row * 9;
+            drawDesk(x, y);
+            drawComputer(x, y);
+        }
+    }
+    
+    // Plantes décoratives
+    drawPlant(3, 5);
+    drawPlant(36, 5);
+    drawPlant(3, 29);
+    drawPlant(36, 29);
+    
+    // Porte de sortie en haut
+    drawDoor(19, 0);
+}
+
+// === SALLE 2: BTS SIO (Salle informatique) ===
+function drawBTS() {
+    // Sol (bleu foncé - tapis technique)
+    drawFloor('#2c3e50', '#34495e');
+    
+    // Murs
+    drawWall(0, 0, 40, 2, '#1a252f');
+    drawWall(0, 34, 40, 2, '#1a252f');
+    drawWall(0, 2, 2, 32, '#1a252f');
+    drawWall(38, 2, 2, 32, '#1a252f');
+    
+    // Tables de TP avec ordinateurs
+    for (let row = 0; row < 4; row++) {
+        for (let col = 0; col < 5; col++) {
+            const x = 5 + col * 6;
+            const y = 5 + row * 7;
+            drawDesk(x, y);
+            drawComputer(x, y);
+            
+            // Câbles au sol (lignes vertes)
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x * 16 + 8, (y + 2) * 16);
+            ctx.lineTo(x * 16 + 8, (y + 3) * 16);
+            ctx.stroke();
+        }
+    }
+    
+    // Serveur dans le coin
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(3 * 16, 30 * 16, 32, 48);
+    ctx.strokeStyle = '#00ff00';
+    ctx.strokeRect(3 * 16, 30 * 16, 32, 48);
+    
+    // LEDs serveur
+    for (let i = 0; i < 3; i++) {
+        ctx.fillStyle = '#00ff00';
+        ctx.fillRect(3 * 16 + 4, 30 * 16 + 8 + i * 12, 4, 4);
+    }
+    
+    // Porte
+    drawDoor(19, 0);
+}
+
+// === SALLE 3: CDI (Bibliothèque) ===
+function drawCDI() {
+    // Sol (moquette rouge bordeaux)
+    drawFloor('#8b0000', '#9b0000');
+    
+    // Murs (beige clair)
+    drawWall(0, 0, 40, 2, '#d4c4b4');
+    drawWall(0, 34, 40, 2, '#d4c4b4');
+    drawWall(0, 2, 2, 32, '#d4c4b4');
+    drawWall(38, 2, 2, 32, '#d4c4b4');
+    
+    // Bibliothèques murales
+    drawBookshelf(2, 3, 8);
+    drawBookshelf(30, 3, 8);
+    drawBookshelf(2, 29, 8);
+    drawBookshelf(30, 29, 8);
+    
+    // Tables de lecture centrales
+    for (let i = 0; i < 3; i++) {
+        const y = 10 + i * 8;
+        // Table longue
+        ctx.fillStyle = '#8b4513';
+        ctx.fillRect(14 * 16, y * 16, 12 * 16, 32);
+        ctx.strokeStyle = COLORS.black;
+        ctx.strokeRect(14 * 16, y * 16, 12 * 16, 32);
+        
+        // Chaises (simples carrés)
+        ctx.fillStyle = '#654321';
+        ctx.fillRect(12 * 16, y * 16 + 8, 16, 16);
+        ctx.fillRect(27 * 16, y * 16 + 8, 16, 16);
+    }
+    
+    // Quelques ordinateurs de consultation
+    drawComputer(15, 12);
+    drawComputer(20, 12);
+    drawComputer(15, 20);
+    
+    // Plantes
+    drawPlant(10, 18);
+    drawPlant(29, 18);
+    
+    // Porte
+    drawDoor(19, 0);
+}
+
+// === SALLE 4: RECYCLAGE D.E.E.E ===
+function drawRecyclage() {
+    // Sol (béton gris)
+    drawFloor('#555555', '#5a5a5a');
+    
+    // Murs (métal industriel)
+    drawWall(0, 0, 40, 2, '#3a3a3a');
+    drawWall(0, 34, 40, 2, '#3a3a3a');
+    drawWall(0, 2, 2, 32, '#3a3a3a');
+    drawWall(38, 2, 2, 32, '#3a3a3a');
+    
+    // Bandes de danger (jaune et noir)
+    for (let i = 0; i < 40; i += 2) {
+        ctx.fillStyle = i % 4 === 0 ? '#ffff00' : '#000000';
+        ctx.fillRect(i * 16, 2 * 16, 32, 8);
+        ctx.fillRect(i * 16, 33 * 16, 32, 8);
+    }
+    
+    // Poubelles de tri (multiples)
+    const binPositions = [
+        [4, 6], [4, 12], [4, 18], [4, 24],
+        [10, 6], [10, 12], [10, 18], [10, 24],
+        [16, 6], [16, 12], [16, 18], [16, 24],
+        [24, 6], [24, 12], [24, 18], [24, 24],
+        [30, 6], [30, 12], [30, 18], [30, 24]
+    ];
+    
+    binPositions.forEach(([x, y]) => {
+        drawRecycleBin(x, y);
+    });
+    
+    // Grande zone de tri centrale
+    ctx.fillStyle = '#ffc425';
+    ctx.fillRect(20 * 16, 14 * 16, 8 * 16, 8 * 16);
+    ctx.strokeStyle = COLORS.black;
+    ctx.lineWidth = 3;
+    ctx.strokeRect(20 * 16, 14 * 16, 8 * 16, 8 * 16);
+    
+    // Panneau DANGER
+    ctx.fillStyle = '#ff0000';
+    ctx.fillRect(34 * 16, 8 * 16, 4 * 16, 3 * 16);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 12px Arial';
+    ctx.fillText('!', 35.5 * 16, 9.5 * 16);
+    
+    // Porte
+    drawDoor(19, 34);
+}
+
+// Données du jeu
+const data = [
+    {
+        title: "NIVEAU 1 — GRANDE ENTREPRISE",
+        text: "Un PC vient d'être déclassé. Il est encore fonctionnel. Où le diriger pour optimiser son usage avant le recyclage final ?",
+        good: 0,
+        choices: ["BTS SIO (Réemploi)", "CDI (Usage léger)", "Recyclage (Trop tôt)"],
+        positionIndex: 0
+    },
+    {
+        title: "NIVEAU 2 — SALLE BTS SIO",
+        text: "Le PC sert à la formation. Son système est obsolète pour les tâches lourdes. Quelle étape garantit sa plus longue durée de vie ?",
+        good: 1,
+        choices: ["Retour entreprise", "CDI (Consultation)", "Recyclage immédiat"],
+        positionIndex: 1
+    },
+    {
+        title: "NIVEAU 3 — CDI",
+        text: "Le PC est utilisé pour la consultation. Il a atteint sa limite d'âge. Quelle est la destination obligatoire finale ?",
+        good: 0,
+        choices: ["Centre D.E.E.E", "Vente (Interdit)", "Réparation (Coûteux)"],
+        positionIndex: 2
+    },
+    {
+        title: "FIN — RECYCLAGE D.E.E.E",
+        text: "Les matériaux sont récupérés. Fin du cycle. Appuyez sur START pour recommencer.",
+        choices: ["▶ START"],
+        positionIndex: 3
+    }
+];
+
+// Mise à jour de la salle
+function updateRoom(index) {
+    const pos = pcPositions[index];
+    const sprite = document.getElementById('pc-sprite');
+    
+    sprite.style.top = pos.top + 'px';
+    sprite.style.left = pos.left + 'px';
+    
+    switch(pos.room) {
+        case 'entreprise': drawEntreprise(); break;
+        case 'bts': drawBTS(); break;
+        case 'cdi': drawCDI(); break;
+        case 'recyclage': drawRecyclage(); break;
+    }
+}
+
+// Chargement de la salle
+function loadSalle() {
+    const d = data[salle];
+    document.getElementById('title').textContent = d.title;
+    document.getElementById('text').textContent = d.text;
+    
+    updateRoom(d.positionIndex);
+    
+    const ch = document.getElementById('choices');
+    ch.innerHTML = '';
+    
+    d.choices.forEach((c, i) => {
+        const b = document.createElement('button');
+        b.textContent = c;
+        if (salle === data.length - 1) {
+            b.onclick = () => relancerJeu();
+        } else {
+            b.onclick = () => choice(i);
+        }
+        ch.appendChild(b);
+    });
+}
+
+// Gestion des choix
+function choice(i) {
+    const d = data[salle];
+    const errorBox = document.getElementById('error-box');
+    
+    if (d.good === undefined) return;
+    
+    if (i === d.good) {
+        salle++;
+        loadSalle();
+    } else {
+        errorBox.textContent = "ERREUR ! RETOUR SALLE PRÉCÉDENTE";
+        errorBox.style.display = 'block';
+        
+        salle = Math.max(0, salle - 1);
+        updateRoom(data[salle].positionIndex);
+        
+        setTimeout(() => {
+            errorBox.style.display = 'none';
+            loadSalle();
+        }, 1500);
+    }
+}
+
+// Relancer le jeu
+function relancerJeu() {
+    salle = 0;
+    loadSalle();
+}
+
+// Démarrage
+loadSalle();
+</script>
 </body>
 </html>
