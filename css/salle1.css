@@ -37,49 +37,6 @@ body {
     position: relative;
     overflow: hidden;
 }
-/* Boutons réponse version arcade néon */
-.option {
-    font-family: inherit;
-    font-size: 0.6rem;
-    padding: 10px 14px;
-    border-radius: 12px;
-    border: 2px solid rgba(148, 163, 184, 0.65);
-    background: rgba(10, 15, 28, 0.95);
-    color: var(--text-main);
-    cursor: pointer;
-    transition:
-        background 0.25s ease,
-        transform 0.15s ease,
-        border-color 0.25s ease,
-        box-shadow 0.25s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.option:hover {
-    border-color: var(--accent);
-    background: rgba(40, 60, 110, 0.9);
-    transform: translateY(-2px);
-    box-shadow: 0 0 12px rgba(250, 200, 50, 0.45),
-                inset 0 0 12px rgba(250, 200, 50, 0.25);
-}
-
-.option:active {
-    transform: translateY(1px) scale(0.97);
-}
-
-/* Effet flashy réussite / erreur */
-.option-correct {
-    border-color: var(--success);
-    background: rgba(34, 197, 94, 0.25);
-    box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
-}
-
-.option-wrong {
-    border-color: var(--error);
-    background: rgba(239, 68, 68, 0.25);
-    box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
-}
 
 /* Effet "étoiles" léger en fond pour cohérence arcade */
 .game-wrapper::before,
@@ -196,7 +153,7 @@ body {
     text-transform: uppercase;
 }
 
-/* "Images" des produits (zone cliquable visuelle possible si tu ajoutes des <img>) */
+/* "Images" des produits */
 .product-image {
     width: 52px;
     height: 52px;
@@ -205,8 +162,117 @@ body {
     border: 1px solid rgba(148, 163, 184, 0.7);
     box-shadow: 0 12px 25px rgba(0, 0, 0, 0.8);
     flex-shrink: 0;
-    position: relative
+    position: relative;
 }
+
+.product-image-phone::before,
+.product-image-printer::before,
+.product-image-pc::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.product-image-phone::before {
+    content: "📱";
+}
+
+.product-image-printer::before {
+    content: "🖨️";
+}
+
+.product-image-pc::before {
+    content: "💻";
+}
+
+/* Texte d’indice */
+.product-hint {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    line-height: 1.6;
+}
+
+/* Conteneur des options */
+.options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+/* Boutons réponse version arcade néon */
+.option {
+    font-family: inherit;
+    font-size: 0.6rem;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 2px solid rgba(148, 163, 184, 0.65);
+    background: rgba(10, 15, 28, 0.95);
+    color: var(--text-main);
+    cursor: pointer;
+    transition:
+        background 0.25s ease,
+        transform 0.15s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.option:hover {
+    border-color: var(--accent);
+    background: rgba(40, 60, 110, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 0 12px rgba(250, 200, 50, 0.45),
+                inset 0 0 12px rgba(250, 200, 50, 0.25);
+}
+
+.option:active {
+    transform: translateY(1px) scale(0.97);
+}
+
+/* Effet flashy réussite / erreur */
+.option-correct {
+    border-color: var(--success);
+    background: rgba(34, 197, 94, 0.25);
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
+}
+
+.option-wrong {
+    border-color: var(--error);
+    background: rgba(239, 68, 68, 0.25);
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+}
+
+/* Feedback sous chaque carte */
+.feedback {
+    font-size: 0.55rem;
+    line-height: 1.5;
+    color: var(--accent);
+    min-height: 1.2em;
+}
+
+/* Footer / message global */
+.game-footer {
+    margin-top: 26px;
+    text-align: center;
+}
+
+.global-message {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+}
+
+.global-message-success {
+    color: var(--success);
+}
+
+/* Boutons de navigation en bas */
 .footer-buttons {
     display: flex;
     justify-content: center;
@@ -239,7 +305,16 @@ body {
     box-shadow: 0 0 10px rgba(34, 197, 94, 0.45);
 }
 
-.btn-termine.show {
+/* Bouton Suivant caché par défaut */
+.btn-suivant {
+    display: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 14px rgba(250, 200, 50, 0.45);
+}
+
+/* Affichage quand le jeu est complété */
+.btn-termine.show,
+.btn-suivant.show {
     display: inline-block;
     animation: popIn 0.5s ease-out;
 }
@@ -247,4 +322,19 @@ body {
 @keyframes popIn {
     0% { transform: scale(0.6); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .game-wrapper {
+        padding: 16px 10px 20px;
+    }
+
+    .game-title {
+        font-size: 1.1rem;
+    }
+
+    .game-subtitle {
+        font-size: 0.58rem;
+    }
 }

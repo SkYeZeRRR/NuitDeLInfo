@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Salle 5 - Libre ou Propriétaire ?</title>
-    <link rel="stylesheet" href="salle5-libre.css">
+    <link rel="stylesheet" href="../css/salle5.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
+
     <!-- Fond de neige animée -->
     <canvas id="snow"></canvas>
 
@@ -18,10 +20,11 @@
         </header>
 
         <main class="game-card">
+
+            <!-- Zone source -->
             <section class="software-pool">
                 <h2 class="section-title">Logiciels à classer</h2>
                 <div id="source-zone" class="software-list">
-                    <!-- Chaque logiciel est draggable -->
                     <div class="software" draggable="true" id="item-libreoffice" data-name="LibreOffice">LibreOffice</div>
                     <div class="software" draggable="true" id="item-firefox" data-name="Firefox">Firefox</div>
                     <div class="software" draggable="true" id="item-windows" data-name="Windows">Windows</div>
@@ -35,6 +38,7 @@
                 </div>
             </section>
 
+            <!-- Zones de classement -->
             <section class="drop-area">
                 <div class="drop-column">
                     <h2 class="section-title drop-title">📂 Logiciel LIBRE</h2>
@@ -57,8 +61,11 @@
                 <button id="check-btn" class="btn primary">Vérifier mes réponses</button>
                 <button id="reset-btn" class="btn ghost">Réinitialiser</button>
                 <button id="back-btn" class="btn ghost">Retour</button>
-                <button id="finish-btn" class="btn primary" style="display:none;">Terminer</button>
+
+                <!-- Nouveau bouton suivant -->
+                <button id="next-btn" class="btn primary" style="display:none;">Salle 6 ➜</button>
             </div>
+
             <p id="result-text" class="result-text"></p>
         </footer>
     </div>
@@ -83,7 +90,7 @@
         const checkBtn = document.getElementById("check-btn");
         const resetBtn = document.getElementById("reset-btn");
         const backBtn = document.getElementById("back-btn");
-        const finishBtn = document.getElementById("finish-btn");
+        const nextBtn = document.getElementById("next-btn");
         const resultText = document.getElementById("result-text");
         const sourceZone = document.getElementById("source-zone");
 
@@ -104,7 +111,7 @@
             });
         });
 
-        // Gestion des zones de dépôt
+        // Zones de dépôt
         dropZones.forEach(zone => {
             zone.addEventListener("dragover", (e) => {
                 e.preventDefault();
@@ -118,9 +125,11 @@
             zone.addEventListener("drop", (e) => {
                 e.preventDefault();
                 zone.classList.remove("drop-hover");
+
                 const id = e.dataTransfer.getData("text/plain");
                 const item = document.getElementById(id);
                 zone.appendChild(item);
+
                 clearFeedback();
             });
         });
@@ -130,61 +139,57 @@
             let total = 0;
             let correct = 0;
 
-            // Réinitialise les classes de feedback
             document.querySelectorAll(".software").forEach(item => {
                 item.classList.remove("correct", "wrong");
             });
 
-            // Vérifie chaque logiciel
             document.querySelectorAll(".software").forEach(item => {
                 const name = item.dataset.name;
-                const parentZone = item.parentElement;
-                const targetType = parentZone.dataset.type; // "libre" ou "proprietaire"
+                const zone = item.parentElement.dataset.type;
 
                 if (!answers[name]) return;
 
                 total++;
 
-                if (targetType && answers[name] === targetType) {
+                if (zone && answers[name] === zone) {
                     correct++;
                     item.classList.add("correct");
-                } else if (targetType) {
+                } else if (zone) {
                     item.classList.add("wrong");
                 }
             });
 
             if (correct === total && total > 0) {
-                resultText.textContent = "Parfait, petit génie du libre ! 🎉 Tu as tout bien classé.";
+                resultText.textContent = "Parfait, petit génie du libre ! 🎉";
                 resultText.className = "result-text success";
-                // Affiche le bouton Terminer quand tout est correct
-                finishBtn.style.display = "inline-block";
+
+                nextBtn.style.display = "inline-block";
             } else {
-                resultText.textContent = `Score : ${correct} / ${total}. Continue, petit pingouin, tu vas y arriver !`;
+                resultText.textContent = `Score : ${correct} / ${total}. Continue petit pingouin !`;
                 resultText.className = "result-text warning";
-                // Cache le bouton Terminer si score incomplet
-                finishBtn.style.display = "none";
+
+                nextBtn.style.display = "none";
             }
         });
 
-        // Réinitialiser
+        // Reset
         resetBtn.addEventListener("click", () => {
             document.querySelectorAll(".software").forEach(item => {
                 sourceZone.appendChild(item);
                 item.classList.remove("correct", "wrong");
             });
             clearFeedback();
-            // Cache le bouton Terminer au reset
-            finishBtn.style.display = "none";
+            nextBtn.style.display = "none";
         });
 
-        // Retour permanent vers la map
+        // Bouton retour → vers la map
         backBtn.addEventListener("click", () => {
-            window.location.href = "map.html";
+            window.location.href = "../map.html";
         });
 
-        // Terminer (visible seulement quand tout est correct)
-        finishBtn.addEventListener("click", () => {
-            window.location.href = "map.html";
+        // Bouton suivant → salle 6
+        nextBtn.addEventListener("click", () => {
+            window.location.href = "salle6.html";
         });
 
         function clearFeedback() {
@@ -192,9 +197,7 @@
             resultText.className = "result-text";
         }
 
-        // =========================
-        //   NEIGE ANIMÉE EN FOND
-        // =========================
+        // NEIGE ANIMÉE
         const snowCanvas = document.getElementById("snow");
         const snowCtx = snowCanvas.getContext("2d");
 
@@ -210,8 +213,7 @@
 
         function createFlakes() {
             flakes = [];
-            const count = 200;
-            for (let i = 0; i < count; i++) {
+            for (let i = 0; i < 200; i++) {
                 flakes.push({
                     x: Math.random() * snowCanvas.width,
                     y: Math.random() * snowCanvas.height,
@@ -244,6 +246,7 @@
 
         createFlakes();
         animateSnow();
+
     </script>
 </body>
 </html>

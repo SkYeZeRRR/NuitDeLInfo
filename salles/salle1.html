@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
     <!-- CSS de la salle -->
-    <link rel="stylesheet" href="salle1-obsolescence.css">
+    <link rel="stylesheet" href="../css/salle1.css">
 </head>
 <body>
 <div class="game-wrapper">
@@ -92,16 +92,16 @@
     </main>
 
     <footer class="game-footer">
-    <p id="global-message" class="global-message">
-        Démasque les 3 arnaques pour gagner la salle, petit manchot du NIRD 🐧.
-    </p>
+        <p id="global-message" class="global-message">
+            Démasque les 3 arnaques pour gagner la salle, petit manchot du NIRD 🐧.
+        </p>
 
-    <div class="footer-buttons">
-        <a href="map.html" class="btn-nav btn-retour">← Retour</a>
-        <a href="map.html" class="btn-nav btn-termine" id="btn-termine">Terminé ✔</a>
-    </div>
-</footer>
-
+        <div class="footer-buttons">
+            <a href="map.html" class="btn-nav btn-retour">← Retour</a>
+            <a href="map.html" class="btn-nav btn-termine" id="btn-termine">Terminé ✔</a>
+            <a href="salle2.html" class="btn-nav btn-suivant" id="btn-suivant">Suivant →</a>
+        </div>
+    </footer>
 </div>
 
 <!-- Script du mini-jeu -->
@@ -109,6 +109,8 @@
     (function () {
         const cards = document.querySelectorAll('.product-card');
         const globalMessage = document.getElementById('global-message');
+        const btnTermine = document.getElementById('btn-termine');
+        const btnSuivant = document.getElementById('btn-suivant');
 
         function checkAllSolved() {
             const solvedCount = document.querySelectorAll('.product-card.solved').length;
@@ -117,11 +119,11 @@
                     "Bien joué ! Tu as démasqué toutes les arnaques de l’obsolescence programmée 💥🌍";
                 globalMessage.classList.add('global-message-success');
 
-        // ➜ Affichage du bouton Terminé
-            document.getElementById("btn-termine").classList.add("show");
-    }
-}
-
+                // Affiche les boutons quand tout est réussi
+                btnTermine.classList.add("show");
+                btnSuivant.classList.add("show");
+            }
+        }
 
         cards.forEach(card => {
             const options = card.querySelectorAll('.option');

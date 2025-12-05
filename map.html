@@ -24,7 +24,7 @@
         <div class="path p5"></div> <!-- 5 ↔ 6 -->
 
         <!-- Niveaux -->
-        <a href="salle1.html" class="level-node lvl1">
+        <a href="salles/salle1.html" class="level-node lvl1">
             <span class="node-id">01</span>
             <span class="node-label">Obsolescence</span>
         </a>
@@ -34,26 +34,39 @@
             <span class="node-label">Linux</span>
         </a>
 
-        <a href="salle3.html" class="level-node lvl3">
+        <a href="salles/salle3.html" class="level-node lvl3">
             <span class="node-id">03</span>
             <span class="node-label">Matériel</span>
         </a>
 
-        <a href="salle4.html" class="level-node lvl4">
+        <a href="salles/salle4.html" class="level-node lvl4">
             <span class="node-id">04</span>
             <span class="node-label">Cloud</span>
         </a>
 
-        <a href="salle5.html" class="level-node lvl5">
+        <a href="salles/salle5.html" class="level-node lvl5">
             <span class="node-id">05</span>
             <span class="node-label">Logiciels libres</span>
         </a>
 
-        <a href="salle6.html" class="level-node lvl6">
+        <a href="salles/salle6.html" class="level-node lvl6">
             <span class="node-id">06</span>
             <span class="node-label">Sobriété</span>
         </a>
     </main>
 </div>
+
+<!-- Script de progression : passe tous les numéros en vert si tout est terminé -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Si la salle 6 a posé le flag de fin dans le localStorage
+    if (localStorage.getItem('nird_all_completed') === 'true') {
+        // On ajoute la classe "completed" à tous les numéros de niveau
+        document.querySelectorAll('.level-node .node-id').forEach(node => {
+            node.classList.add('completed');
+        });
+    }
+});
+</script>
 </body>
 </html>
